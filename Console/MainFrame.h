@@ -194,6 +194,7 @@ class MainFrame
 
 		void AdjustWindowRect(CRect& rect);
 //		void AdjustAndResizeConsoleView(CRect& rectView);
+		void AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore = false);
 
 	private:
 
@@ -217,7 +218,6 @@ class MainFrame
 		void ShowStatusbar(BOOL bShow);
 
 		void ResizeWindow();
-		void AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore = false);
 		void SetTransparency();
 		void CreateAcceleratorTable();
 		void RegisterGlobalHotkeys();
