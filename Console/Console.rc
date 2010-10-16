@@ -646,6 +646,38 @@ BEGIN
     END
 END
 
+IDR_SYSTEM_MENU MENU 
+BEGIN
+    POPUP "_"
+    BEGIN
+        MENUITEM "Close Ta&b",                  ID_FILE_CLOSE_TAB
+        MENUITEM SEPARATOR
+        MENUITEM "New &Tab",                    ID_FILE_NEW_TAB
+        POPUP "&Edit"
+        BEGIN
+            MENUITEM "&Copy",                       ID_EDIT_COPY
+            MENUITEM "Cl&ear selection",            ID_EDIT_CLEAR_SELECTION
+            MENUITEM "&Paste",                      ID_EDIT_PASTE
+            MENUITEM SEPARATOR
+            MENUITEM "&Rename Tab",                 ID_EDIT_RENAME_TAB
+            MENUITEM SEPARATOR
+            MENUITEM "&Settings...",                ID_EDIT_SETTINGS
+        END
+        POPUP "&View"
+        BEGIN
+            MENUITEM "&Console Window",             ID_VIEW_CONSOLE
+            MENUITEM SEPARATOR
+            MENUITEM "&Menu",                       ID_VIEW_MENU
+            MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+            MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+            MENUITEM "Ta&bs",                       ID_VIEW_TABS
+        END
+        MENUITEM "&Properties",                 ID_EDIT_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "&About Console...",           ID_APP_ABOUT
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

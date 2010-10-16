@@ -84,6 +84,7 @@
 #define IDD_SETTINGS_TABS_2             214
 #define IDD_SETTINGS_MOUSE              215
 #define IDD_CREDENTIALS                 216
+#define IDR_SYSTEM_MENU                 217
 #define IDC_TAB_NAME                    1000
 #define IDC_APPLY                       1001
 #define IDC_TREE_SECTIONS               1002
@@ -346,7 +347,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        217
+#define _APS_NEXT_RESOURCE_VALUE        218
 #define _APS_NEXT_COMMAND_VALUE         32794
 #define _APS_NEXT_CONTROL_VALUE         1178
 #define _APS_NEXT_SYMED_VALUE           101

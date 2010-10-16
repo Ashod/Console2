@@ -269,10 +269,45 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
+	UpdateSystemMenu();
+
 	// this is the only way I know that other message handlers can be aware 
 	// if they're being called after OnCreate has finished
 	m_bOnCreateDone = true;
 	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+void MainFrame::UpdateSystemMenu()
+{
+	CMenuHandle systemMenu (::GetSystemMenu(m_hWnd, false));
+	CMenu systemMenuTemplate;
+	CMenu popupMenu;
+	systemMenuTemplate.LoadMenu(IDR_SYSTEM_MENU);
+	popupMenu = systemMenuTemplate.GetSubMenu(0);
+
+	// prepare to copy the menu
+	CMenuItemInfo mii;
+	mii.fMask = MIIM_FTYPE | MIIM_ID | MIIM_STRING | MIIM_SUBMENU;
+	shared_ptr<TCHAR> miiString (new TCHAR[64]); // 64 is an arbitrary chosen length
+	mii.dwTypeData = miiString.get();
+
+	// copy the menu
+	for (int i = 0; i < popupMenu.GetMenuItemCount(); i++) {
+		mii.cch = 64; // reset the member, modified by previous GetMenuItemInfo
+		popupMenu.GetMenuItemInfo(i, true, &mii);
+		systemMenu.InsertMenuItem(UINT_MAX, true, &mii);
+	}
+
+	// copy from UpdateTabsMenu
+	// (we don't need to recreate menu here, just update the New Tab item)
+	mii.fMask		= MIIM_SUBMENU;
+	mii.hSubMenu	= HMENU(m_tabsMenu);
+	systemMenu.SetMenuItemInfo(ID_FILE_NEW_TAB, FALSE, &mii);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -494,6 +529,8 @@ LRESULT MainFrame::OnSysCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/,
 
 //	TRACE(L"OnSysCommand: 0x%08X\n", wParam);
 
+	bHandled = FALSE;
+
 	// OnSize needs to know this
 	if ((wParam & 0xFFF0) == SC_RESTORE)
 	{
@@ -502,9 +539,15 @@ LRESULT MainFrame::OnSysCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/,
 	else if ((wParam & 0xFFF0) == SC_MAXIMIZE)
 	{
 		GetWindowRect(&m_rectRestoredWnd);
+	} else if ((wParam & 0xFFF0) < SC_SIZE) {
+		// our own commands in the system menu have ID's less than SC_SIZE,
+		// we process them and...
+		SendMessage(WM_COMMAND, wParam);
+
+		// do NOT pass them to DefWindowProc
+		bHandled = TRUE;
 	}
 
-	bHandled = FALSE;
 	return 0;
 }
 
@@ -1775,8 +1818,12 @@ void MainFrame::UpdateTabTitle(const shared_ptr<ConsoleView>& consoleView, CStri
 
 void MainFrame::UpdateTabsMenu(CMenuHandle mainMenu, CMenu& tabsMenu)
 {
-	if (!tabsMenu.IsNull()) tabsMenu.DestroyMenu();
-	tabsMenu.CreateMenu();
+	if (!tabsMenu.IsNull())
+		// we can't simply destroy tabsMenu, because
+		// we added it to the System menu
+		while (tabsMenu.RemoveMenu(0, MF_BYPOSITION));
+	else
+		tabsMenu.CreateMenu();
 
 	// build tabs menu
 	TabDataVector&			tabDataVector	= g_settingsHandler->GetTabSettings().tabDataVector;
