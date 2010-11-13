@@ -2,6 +2,7 @@
 
 #include "Cursors.h"
 #include "SelectionHandler.h"
+#include "DropFileTarget.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -23,6 +24,7 @@ class MainFrame;
 
 class ConsoleView
 	: public CWindowImpl<ConsoleView, CWindow, CWinTraits<WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VSCROLL | WS_HSCROLL, 0> >
+	, public CComObject<CDropFileTarget>
 {
 	public:
 //		DECLARE_WND_CLASS(NULL)
@@ -65,7 +67,6 @@ class ConsoleView
 			MESSAGE_HANDLER(WM_TIMER, OnTimer)
 			MESSAGE_HANDLER(WM_INPUTLANGCHANGEREQUEST, OnInputLangChangeRequest)
 			MESSAGE_HANDLER(WM_INPUTLANGCHANGE, OnInputLangChange)
-			MESSAGE_HANDLER(WM_DROPFILES, OnDropFiles)
 			MESSAGE_HANDLER(UM_UPDATE_CONSOLE_VIEW, OnUpdateConsoleView)
 			COMMAND_RANGE_HANDLER(ID_SCROLL_UP, ID_SCROLL_ALL_RIGHT, OnScrollCommand)
 		END_MSG_MAP()
@@ -91,7 +92,6 @@ class ConsoleView
 		LRESULT OnTimer(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 		LRESULT OnInputLangChangeRequest(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 		LRESULT OnInputLangChange(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-		LRESULT OnDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 		LRESULT OnUpdateConsoleView(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 		LRESULT OnScrollCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
@@ -135,6 +135,10 @@ class ConsoleView
 		void InitializeScrollbars();
 
 		const CString& GetExceptionMessage() const { return m_exceptionMessage; }
+
+		/* Drag & Drop Support */
+		STDMETHOD(Drop) (IDataObject* pDataObj, DWORD grfKeyState, POINTL ptl, DWORD* pdwEffect);
+		virtual HWND GetTargetHwnd() { return m_hWnd; }
 
 	private:
 

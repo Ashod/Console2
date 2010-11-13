@@ -109,7 +109,7 @@ BOOL ConsoleView::PreTranslateMessage(MSG* pMsg)
 
 LRESULT ConsoleView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
-	DragAcceptFiles(TRUE);
+	RegisterDragDrop(m_hWnd, this);
 
 	// load icon
 	if (m_tabData->strIcon.length() > 0)
@@ -250,6 +250,9 @@ LRESULT ConsoleView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 LRESULT ConsoleView::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	if (m_bFlashTimerRunning) KillTimer(FLASH_TAB_TIMER);
+
+	RevokeDragDrop(m_hWnd);
+
 	return 0;
 }
 
@@ -761,37 +764,6 @@ LRESULT ConsoleView::OnInputLangChange(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	::PostMessage(m_consoleHandler.GetConsoleParams()->hwndConsoleWindow, WM_INPUTLANGCHANGEREQUEST, INPUTLANGCHANGE_SYSCHARSET, lParam);
 	::PostMessage(m_consoleHandler.GetConsoleParams()->hwndConsoleWindow, uMsg, wParam, lParam);
 	bHandled = FALSE;
-	return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////
-
-LRESULT ConsoleView::OnDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-{
-	HDROP	hDrop = reinterpret_cast<HDROP>(wParam);
-	UINT	uFilesCount = ::DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
-	CString	strFilenames;
-
-	// concatenate all filenames
-	for (UINT i = 0; i < uFilesCount; ++i)
-	{
-		CString	strFilename;
-		::DragQueryFile(hDrop, i, strFilename.GetBuffer(MAX_PATH), MAX_PATH);
-		strFilename.ReleaseBuffer();
-
-		// put quotes around the filename
-		strFilename = CString(L"\"") + strFilename + CString("\"");
-		
-		if (i > 0) strFilenames += L" ";
-		strFilenames += strFilename;
-
-	}
-	::DragFinish(hDrop);
-
-	SendTextToConsole(strFilenames);
 	return 0;
 }
 
@@ -2353,3 +2325,24 @@ COORD ConsoleView::GetConsoleCoord(const CPoint& clientPoint)
 
 /////////////////////////////////////////////////////////////////////////////
 
+/* Drag & Drop Support */
+
+STDMETHODIMP ConsoleView::Drop (IDataObject* pDataObj, DWORD grfKeyState, POINTL ptl, DWORD* pdwEffect)
+{
+	CDropFileTarget::Drop(pDataObj, grfKeyState, ptl, pdwEffect);
+
+	CString drop = _T("");
+
+	if (DROPEFFECT_COPY == *pdwEffect && HDropHandler(pDataObj, &drop)) {
+		if (SUCCEEDED(ResolveShortcut(m_hWnd, drop.Mid(1, drop.GetLength() - 2), drop))) {
+			SendTextToConsole(drop);
+			return S_OK;
+		}
+	}
+
+	if (GetData(pDataObj, &drop))
+		SendTextToConsole (drop);
+
+    return S_OK;
+
+}

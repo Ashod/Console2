@@ -346,7 +346,7 @@ void LoadLocalizedResources()
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow)
 {
-	HRESULT hRes = ::CoInitialize(NULL);
+	HRESULT hRes = ::OleInitialize(NULL); // IDropTargetHelper does not work with CoInitialize
 // If you are running on NT 4.0 or higher you can use the following call instead to 
 // make the EXE free threaded. This means that calls come in on a random RPC thread.
 //	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -370,7 +370,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	_Module.Term();
 	g_settingsHandler.reset();
 
-	::CoUninitialize();
+	::OleUninitialize();
 
 	return nRet;
 }
