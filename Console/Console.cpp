@@ -339,6 +339,76 @@ void LoadLocalizedResources()
 		_Module.SetResourceInstance(hResources);
 }
 
+#ifdef _WIN64
+BOOL Restart64(LPTSTR /* lpstrCmdLine */, int /* nCmdShow */)
+{
+	return FALSE;
+}
+#else
+
+/**
+ * The funtion will start 64-bit console if it finds that it's running in WOW
+ *
+ * The code is taken from:
+ * http://blogs.technet.com/ken/archive/2009/05/03/32-64-bit-detection.aspx
+ * and adjusted, according to:
+ * http://blogs.msdn.com/oldnewthing/archive/2005/02/01/364563.aspx
+ * and
+ * http://msdn.microsoft.com/en-us/library/ms684139(VS.85).aspx
+ */
+typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+
+BOOL Is64BitWindows()
+{
+	HMODULE hKernel32  = GetModuleHandle(TEXT("kernel32.dll"));
+
+	// this is a paranoid check, but Ken has it
+	if (hKernel32) {
+		LPFN_ISWOW64PROCESS pIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(hKernel32, (LPCSTR)"IsWow64Process");
+		if (pIsWow64Process) {
+			BOOL b64 = FALSE;
+			return (*pIsWow64Process)(GetCurrentProcess(), &b64) && b64;
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL Restart64(LPTSTR lpstrCmdLine, WORD nCmdShow)
+{
+	if (Is64BitWindows()) {
+		wstring str64(Helpers::GetModulePath(NULL) + wstring(L"x64\\Console.exe"));
+		wstring strCmdLine(TEXT("\""));
+
+		strCmdLine.append(str64);
+		strCmdLine.append(TEXT("\" "));
+		strCmdLine.append(lpstrCmdLine);
+
+		STARTUPINFO si;
+		::ZeroMemory(&si, sizeof(STARTUPINFO));
+
+		si.cb = sizeof(STARTUPINFO);
+		si.wShowWindow = nCmdShow;
+
+		PROCESS_INFORMATION pi;
+
+		return ::CreateProcess(
+			str64.c_str(),
+			const_cast<TCHAR *>(strCmdLine.c_str()),
+			NULL,
+			NULL,
+			FALSE,
+			0,
+			NULL,
+			NULL,
+			&si,
+			&pi);
+	}
+
+	return FALSE;
+}
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -346,6 +416,9 @@ void LoadLocalizedResources()
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow)
 {
+	if (TRUE == Restart64(lpstrCmdLine, (WORD)nCmdShow))
+		return 0;
+
 	HRESULT hRes = ::OleInitialize(NULL); // IDropTargetHelper does not work with CoInitialize
 // If you are running on NT 4.0 or higher you can use the following call instead to 
 // make the EXE free threaded. This means that calls come in on a random RPC thread.
