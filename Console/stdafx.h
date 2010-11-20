@@ -6,9 +6,10 @@
 #pragma once
 
 // Change these values to use different versions
+// Target Win7 to support Jump List
 // Use IE 5+ to support IDropTargetHelper
-#define WINVER			0x0501
-#define _WIN32_WINNT	0x0501 
+#define WINVER			0x0601
+#define _WIN32_WINNT	0x0601 
 #define _WIN32_IE		0x0500
 #define _RICHEDIT_VER	0x0100
 
