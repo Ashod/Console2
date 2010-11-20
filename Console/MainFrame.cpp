@@ -2707,3 +2707,21 @@ BOOL MainFrame::SetTrayIcon(DWORD dwMessage) {
 
 /////////////////////////////////////////////////////////////////////////////
 
+LRESULT MainFrame::OnCopyData(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+{
+	COPYDATASTRUCT *cds = (COPYDATASTRUCT *)lParam;
+	if (!cds) return 0;
+
+	vector<wstring> startupTabs;
+	vector<wstring> startupCmds;
+	vector<wstring> startupDirs;
+	int nMultiStartSleep;
+	bool bSafe;
+
+	wstring ignoreTitle;
+
+	ParseCommandLine((LPCTSTR)cds->lpData, ignoreTitle, startupTabs, startupDirs, startupCmds, nMultiStartSleep, bSafe);
+	CreateInitialTabs(startupTabs, startupCmds, startupDirs, nMultiStartSleep, bSafe);
+
+	return 0;
+}
