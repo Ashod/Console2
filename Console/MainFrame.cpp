@@ -1546,7 +1546,14 @@ LRESULT MainFrame::OnDumpBuffer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 LRESULT MainFrame::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	::HtmlHelp(m_hWnd, (Helpers::GetModulePath(NULL) + wstring(L"console.chm")).c_str(), HH_DISPLAY_TOPIC, NULL);
+	wstring helpFile = Helpers::GetModulePath(NULL) + wstring(L"console.chm");
+
+	// according to http://msdn.microsoft.com/en-us/library/ff469212(PROT.10).aspx
+	// Zone.Identifier is the alternate stream to store security zone info
+	// The Unblock button in file's Properties window does about the same.
+	::DeleteFile((helpFile + wstring(L":Zone.Identifier")).c_str());
+
+	::HtmlHelp(m_hWnd, helpFile.c_str(), HH_DISPLAY_TOPIC, NULL);
 	return 0;
 }
 
