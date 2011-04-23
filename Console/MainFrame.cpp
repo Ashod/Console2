@@ -27,7 +27,8 @@ MainFrame::MainFrame
 	const vector<wstring>& startupDirs, 
 	const vector<wstring>& startupCmds, 
 	int nMultiStartSleep, 
-	const wstring& strDbgCmdLine
+	const wstring& strDbgCmdLine,
+	const bool bSafe
 )
 : m_bOnCreateDone(false)
 , m_startupTabs(startupTabs)
@@ -55,6 +56,7 @@ MainFrame::MainFrame
 , m_bRestoringWindow(false)
 , m_rectRestoredWnd(0, 0, 0, 0)
 , m_animationWindow()
+, m_bSafe(bSafe)
 {
 
 }
@@ -149,6 +151,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 	CreateTabWindow(m_hWnd, rcDefault, dwTabStyles);
 
+	bool bAtLeastOneStarted = false;
+
 	// create initial console window(s)
 	if (m_startupTabs.size() == 0)
 	{
@@ -158,11 +162,10 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		if (m_startupDirs.size() > 0) strStartupDir = m_startupDirs[0];
 		if (m_startupCmds.size() > 0) strStartupCmd = m_startupCmds[0];
 
-		if (!CreateNewConsole(0, strStartupDir, strStartupCmd, m_strDbgCmdLine)) return -1;
+		bAtLeastOneStarted = CreateNewConsole(0, strStartupDir, strStartupCmd, m_strDbgCmdLine);
 	}
 	else
 	{
-		bool			bAtLeastOneStarted = false;
 		TabSettings&	tabSettings = g_settingsHandler->GetTabSettings();
 
 		for (size_t tabIndex = 0; tabIndex < m_startupTabs.size(); ++tabIndex)
@@ -187,10 +190,18 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				}
 			}
 		}
-
-		// could not start none of the startup tabs, exit
-		if (!bAtLeastOneStarted) return -1;
 	}
+
+	// could not start none of the startup tabs, check the "safe" start
+	if (!bAtLeastOneStarted && m_bSafe)
+	{
+		wstring cmd = Helpers::ExpandEnvironmentStrings(_T("%COMSPEC%"));
+		if (!cmd.length()) cmd = _T("cmd.exe");
+		bAtLeastOneStarted = CreateNewConsole(0, _T(""), _T(""), cmd);
+	}
+	
+	// could not start none of the startup tabs, including default COMSPEC, exit
+	if (!bAtLeastOneStarted) return -1;
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_MENU, 1);
@@ -2443,7 +2454,7 @@ void MainFrame::SetTransparency()
 	// set transparency
 	TransparencySettings& transparencySettings = g_settingsHandler->GetAppearanceSettings().transparencySettings;
 
-	switch (transparencySettings.transType)
+	switch (m_bSafe ? transNone : transparencySettings.transType)
 	{
 		case transAlpha : 
 

@@ -69,7 +69,8 @@ void ParseCommandLine
 	vector<wstring>& startupDirs, 
 	vector<wstring>& startupCmds, 
 	int& nMultiStartSleep, 
-	wstring& strDbgCmdLine
+	wstring& strDbgCmdLine,
+	bool &bSafe
 )
 {
 	int						argc = 0;
@@ -122,6 +123,10 @@ void ParseCommandLine
 			nMultiStartSleep = _wtoi(argv[i]);
 			if (nMultiStartSleep < 0) nMultiStartSleep = 500;
 		}
+		else if (wstring(argv[i]) == wstring(L"-safe"))
+		{
+			bSafe = true;
+		}
 		// TODO: not working yet, need to investigate
 /*
 		else if (wstring(argv[i]) == wstring(L"-dbg"))
@@ -156,6 +161,7 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	vector<wstring>	startupCmds;
 	int				nMultiStartSleep = 0;
 	wstring			strDbgCmdLine(L"");
+	bool			bSafe = false;
 
 	ParseCommandLine(
 		lpstrCmdLine, 
@@ -165,7 +171,8 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		startupDirs, 
 		startupCmds, 
 		nMultiStartSleep, 
-		strDbgCmdLine);
+		strDbgCmdLine,
+		bSafe);
 
 	if (strConfigFile.length() == 0)
 	{
@@ -182,7 +189,7 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	// create main window
 	NoTaskbarParent noTaskbarParent;
-	MainFrame wndMain(strWindowTitle, startupTabs, startupDirs, startupCmds, nMultiStartSleep, strDbgCmdLine);
+	MainFrame wndMain(strWindowTitle, startupTabs, startupDirs, startupCmds, nMultiStartSleep, strDbgCmdLine, bSafe);
 
 	if (!g_settingsHandler->GetAppearanceSettings().stylesSettings.bTaskbarButton)
 	{

@@ -42,7 +42,8 @@ class MainFrame
 			const vector<wstring>& startupDirs, 
 			const vector<wstring>& startupCmds, 
 			int nMultiStartSleep, 
-			const wstring& strDbgCmdLine
+			const wstring& strDbgCmdLine,
+			const bool bSafe
 		);
 
 		virtual BOOL PreTranslateMessage(MSG* pMsg);
@@ -277,6 +278,8 @@ class MainFrame
 		CDC				m_dcText;
 
 		shared_ptr<AnimationWindow>	m_animationWindow;
+
+		bool			m_bSafe;
 
 };
 
