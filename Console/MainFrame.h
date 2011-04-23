@@ -37,13 +37,7 @@ class MainFrame
 
 		MainFrame
 		(
-			const wstring strWindowTitle,
-			const vector<wstring>& startupTabs, 
-			const vector<wstring>& startupDirs, 
-			const vector<wstring>& startupCmds, 
-			int nMultiStartSleep, 
-			const wstring& strDbgCmdLine,
-			const bool bSafe
+			LPCTSTR lpstrCmdLine
 		);
 
 		virtual BOOL PreTranslateMessage(MSG* pMsg);
@@ -228,13 +222,22 @@ class MainFrame
 
 		void UpdateSystemMenu();
 
+		LRESULT CreateInitialTabs
+		(
+			vector<wstring> startupTabs,
+			vector<wstring> startupCmds,
+			vector<wstring> startupDirs,
+			int nMultiStartSleep,
+			bool bSafe
+		);
+
 	private:
 
 		bool					m_bOnCreateDone;
 
-		const vector<wstring>&	m_startupTabs;
-		const vector<wstring>&	m_startupDirs;
-		const vector<wstring>&	m_startupCmds;
+		vector<wstring>	m_startupTabs;
+		vector<wstring>	m_startupDirs;
+		vector<wstring>	m_startupCmds;
 		int						m_nMultiStartSleep;
 		wstring					m_strDbgCmdLine;
 

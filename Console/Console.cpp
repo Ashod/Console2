@@ -63,14 +63,7 @@ class NoTaskbarParent
 void ParseCommandLine
 (
 	LPTSTR lptstrCmdLine, 
-	wstring& strConfigFile, 
-	wstring& strWindowTitle, 
-	vector<wstring>& startupTabs, 
-	vector<wstring>& startupDirs, 
-	vector<wstring>& startupCmds, 
-	int& nMultiStartSleep, 
-	wstring& strDbgCmdLine,
-	bool &bSafe
+	wstring& strConfigFile
 )
 {
 	int						argc = 0;
@@ -87,61 +80,7 @@ void ParseCommandLine
 			if (i == argc) break;
 			strConfigFile = argv[i];
 		}
-		else if (wstring(argv[i]) == wstring(L"-w"))
-		{
-			// startup tab name
-			++i;
-			if (i == argc) break;
-			strWindowTitle = argv[i];
-		}
-		else if (wstring(argv[i]) == wstring(L"-t"))
-		{
-			// startup tab name
-			++i;
-			if (i == argc) break;
-			startupTabs.push_back(argv[i]);
-		}
-		else if (wstring(argv[i]) == wstring(L"-d"))
-		{
-			// startup dir
-			++i;
-			if (i == argc) break;
-			startupDirs.push_back(argv[i]);
-		}
-		else if (wstring(argv[i]) == wstring(L"-r"))
-		{
-			// startup cmd
-			++i;
-			if (i == argc) break;
-			startupCmds.push_back(argv[i]);
-		}
-		else if (wstring(argv[i]) == wstring(L"-ts"))
-		{
-			// startup tab sleep for multiple tabs
-			++i;
-			if (i == argc) break;
-			nMultiStartSleep = _wtoi(argv[i]);
-			if (nMultiStartSleep < 0) nMultiStartSleep = 500;
-		}
-		else if (wstring(argv[i]) == wstring(L"-safe"))
-		{
-			bSafe = true;
-		}
-		// TODO: not working yet, need to investigate
-/*
-		else if (wstring(argv[i]) == wstring(L"-dbg"))
-		{
-			// console window replacement option (see Tip 1 in the help file)
-			++i;
-			if (i == argc) break;
-			strDbgCmdLine = argv[i];
-		}
-*/
 	}
-
-	// make sure that startupDirs and startupCmds are at least as big as startupTabs
-	if (startupDirs.size() < startupTabs.size()) startupDirs.resize(startupTabs.size());
-	if (startupCmds.size() < startupTabs.size()) startupCmds.resize(startupTabs.size());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -155,24 +94,10 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	_Module.AddMessageLoop(&theLoop);
 
 	wstring			strConfigFile(L"");
-	wstring			strWindowTitle(L"");
-	vector<wstring>	startupTabs;
-	vector<wstring>	startupDirs;
-	vector<wstring>	startupCmds;
-	int				nMultiStartSleep = 0;
-	wstring			strDbgCmdLine(L"");
-	bool			bSafe = false;
 
 	ParseCommandLine(
 		lpstrCmdLine, 
-		strConfigFile, 
-		strWindowTitle, 
-		startupTabs, 
-		startupDirs, 
-		startupCmds, 
-		nMultiStartSleep, 
-		strDbgCmdLine,
-		bSafe);
+		strConfigFile);
 
 	if (strConfigFile.length() == 0)
 	{
@@ -189,7 +114,7 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	// create main window
 	NoTaskbarParent noTaskbarParent;
-	MainFrame wndMain(strWindowTitle, startupTabs, startupDirs, startupCmds, nMultiStartSleep, strDbgCmdLine, bSafe);
+	MainFrame wndMain(lpstrCmdLine);
 
 	if (!g_settingsHandler->GetAppearanceSettings().stylesSettings.bTaskbarButton)
 	{

@@ -19,23 +19,79 @@
 
 
 //////////////////////////////////////////////////////////////////////////////
+static void ParseCommandLine
+(
+	LPCTSTR lptstrCmdLine,
+	wstring& strWindowTitle,
+	vector<wstring>& startupTabs,
+	vector<wstring>& startupDirs,
+	vector<wstring>& startupCmds,
+	int& nMultiStartSleep,
+	bool &bSafe
+)
+{
+	int argc = 0;
+	shared_array<LPWSTR> argv(::CommandLineToArgvW(lptstrCmdLine, &argc), ::GlobalFree);
+
+	if (argc < 1) return;
+
+	for (int i = 0; i < argc; ++i)
+	{
+		if (wstring(argv[i]) == wstring(L"-w"))
+		{
+			// startup tab name
+			++i;
+			if (i == argc) break;
+			strWindowTitle = argv[i];
+		}
+		else if (wstring(argv[i]) == wstring(L"-t"))
+		{
+			// startup tab name
+			++i;
+			if (i == argc) break;
+			startupTabs.push_back(argv[i]);
+		}
+		else if (wstring(argv[i]) == wstring(L"-d"))
+		{
+			// startup dir
+			++i;
+			if (i == argc) break;
+			startupDirs.push_back(argv[i]);
+		}
+		else if (wstring(argv[i]) == wstring(L"-r"))
+		{
+			// startup cmd
+			++i;
+			if (i == argc) break;
+			startupCmds.push_back(argv[i]);
+		}
+		else if (wstring(argv[i]) == wstring(L"-ts"))
+		{
+			// startup tab sleep for multiple tabs
+			++i;
+			if (i == argc) break;
+			nMultiStartSleep = _wtoi(argv[i]);
+			if (nMultiStartSleep < 0) nMultiStartSleep = 500;
+		}
+		else if (wstring(argv[i]) == wstring(L"-safe"))
+		{
+			bSafe = true;
+		}
+	}
+
+	// make sure that startupDirs and startupCmds are at least as big as startupTabs
+	if (startupDirs.size() < startupTabs.size()) startupDirs.resize(startupTabs.size());
+	if (startupCmds.size() < startupTabs.size()) startupCmds.resize(startupTabs.size());
+}
 
 MainFrame::MainFrame
 (
-	const wstring strWindowTitle,
-	const vector<wstring>& startupTabs, 
-	const vector<wstring>& startupDirs, 
-	const vector<wstring>& startupCmds, 
-	int nMultiStartSleep, 
-	const wstring& strDbgCmdLine,
-	const bool bSafe
+	LPCTSTR lpstrCmdLine
 )
 : m_bOnCreateDone(false)
-, m_startupTabs(startupTabs)
-, m_startupDirs(startupDirs)
-, m_startupCmds(startupCmds)
-, m_nMultiStartSleep(nMultiStartSleep)
-, m_strDbgCmdLine(strDbgCmdLine)
+, m_startupTabs(vector<wstring>(0))
+, m_startupDirs(vector<wstring>(0))
+, m_startupCmds(vector<wstring>(0))
 , m_activeView()
 , m_bMenuVisible(TRUE)
 , m_bToolbarVisible(TRUE)
@@ -46,8 +102,6 @@ MainFrame::MainFrame
 , m_mousedragOffset(0, 0)
 , m_views()
 , m_viewsMutex(NULL, FALSE, NULL)
-, m_strCmdLineWindowTitle(strWindowTitle.c_str())
-, m_strWindowTitle(strWindowTitle.c_str())
 , m_dwRows(0)
 , m_dwColumns(0)
 , m_dwWindowWidth(0)
@@ -56,9 +110,21 @@ MainFrame::MainFrame
 , m_bRestoringWindow(false)
 , m_rectRestoredWnd(0, 0, 0, 0)
 , m_animationWindow()
-, m_bSafe(bSafe)
+, m_bSafe(false)
 {
+	wstring strWindowTitle(L"");
 
+	ParseCommandLine(
+		lpstrCmdLine,
+		strWindowTitle,
+		m_startupTabs,
+		m_startupDirs,
+		m_startupCmds,
+		m_nMultiStartSleep,
+		m_bSafe);
+
+	m_strCmdLineWindowTitle = strWindowTitle.c_str();
+	m_strWindowTitle = strWindowTitle.c_str();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -106,6 +172,66 @@ BOOL MainFrame::OnIdle()
 
 
 //////////////////////////////////////////////////////////////////////////////
+LRESULT MainFrame::CreateInitialTabs
+(
+	vector<wstring> startupTabs,
+	vector<wstring> startupCmds,
+	vector<wstring> startupDirs,
+	int nMultiStartSleep,
+	bool bSafe
+)
+{
+	bool bAtLeastOneStarted = false;
+
+	// create initial console window(s)
+	if (startupTabs.size() == 0)
+	{
+		wstring strStartupDir(L"");
+		wstring strStartupCmd(L"");
+
+		if (startupDirs.size() > 0) strStartupDir = startupDirs[0];
+		if (startupCmds.size() > 0) strStartupCmd = startupCmds[0];
+
+		bAtLeastOneStarted = CreateNewConsole(0, strStartupDir, strStartupCmd, m_strDbgCmdLine);
+	}
+	else
+	{
+		TabSettings&	tabSettings = g_settingsHandler->GetTabSettings();
+
+		for (size_t tabIndex = 0; tabIndex < startupTabs.size(); ++tabIndex)
+		{
+			// find tab with corresponding name...
+			for (size_t i = 0; i < tabSettings.tabDataVector.size(); ++i)
+			{
+				wstring str = tabSettings.tabDataVector[i]->strTitle;
+				if (tabSettings.tabDataVector[i]->strTitle == startupTabs[tabIndex])
+				{
+					// found it, create
+					if (CreateNewConsole(
+						static_cast<DWORD>(i), 
+						startupDirs[tabIndex],
+						startupCmds[tabIndex],
+						(i == 0) ? m_strDbgCmdLine : wstring(L"")))
+					{
+						bAtLeastOneStarted = true;
+					}
+					if (startupTabs.size() > 1) ::Sleep(nMultiStartSleep);
+					break;
+				}
+			}
+		}
+	}
+
+	// could not start none of the startup tabs, check the "safe" start
+	if (!bAtLeastOneStarted && bSafe)
+	{
+		wstring cmd = Helpers::ExpandEnvironmentStrings(_T("%COMSPEC%"));
+		if (!cmd.length()) cmd = _T("cmd.exe");
+		bAtLeastOneStarted = CreateNewConsole(0, _T(""), _T(""), cmd);
+	}
+	
+	return bAtLeastOneStarted ? 0 : -1;
+}
 
 LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -151,57 +277,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 	CreateTabWindow(m_hWnd, rcDefault, dwTabStyles);
 
-	bool bAtLeastOneStarted = false;
-
-	// create initial console window(s)
-	if (m_startupTabs.size() == 0)
-	{
-		wstring strStartupDir(L"");
-		wstring strStartupCmd(L"");
-
-		if (m_startupDirs.size() > 0) strStartupDir = m_startupDirs[0];
-		if (m_startupCmds.size() > 0) strStartupCmd = m_startupCmds[0];
-
-		bAtLeastOneStarted = CreateNewConsole(0, strStartupDir, strStartupCmd, m_strDbgCmdLine);
-	}
-	else
-	{
-		TabSettings&	tabSettings = g_settingsHandler->GetTabSettings();
-
-		for (size_t tabIndex = 0; tabIndex < m_startupTabs.size(); ++tabIndex)
-		{
-			// find tab with corresponding name...
-			for (size_t i = 0; i < tabSettings.tabDataVector.size(); ++i)
-			{
-				wstring str = tabSettings.tabDataVector[i]->strTitle;
-				if (tabSettings.tabDataVector[i]->strTitle == m_startupTabs[tabIndex])
-				{
-					// found it, create
-					if (CreateNewConsole(
-							static_cast<DWORD>(i), 
-							m_startupDirs[tabIndex],
-							m_startupCmds[tabIndex],
-							(i == 0) ? m_strDbgCmdLine : wstring(L"")))
-					{
-						bAtLeastOneStarted = true;
-					}
-					if (m_startupTabs.size() > 1) ::Sleep(m_nMultiStartSleep);
-					break;
-				}
-			}
-		}
-	}
-
-	// could not start none of the startup tabs, check the "safe" start
-	if (!bAtLeastOneStarted && m_bSafe)
-	{
-		wstring cmd = Helpers::ExpandEnvironmentStrings(_T("%COMSPEC%"));
-		if (!cmd.length()) cmd = _T("cmd.exe");
-		bAtLeastOneStarted = CreateNewConsole(0, _T(""), _T(""), cmd);
-	}
-	
-	// could not start none of the startup tabs, including default COMSPEC, exit
-	if (!bAtLeastOneStarted) return -1;
+	if (LRESULT created = CreateInitialTabs(m_startupTabs, m_startupCmds, m_startupDirs, m_nMultiStartSleep, m_bSafe))
+		return created;
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_MENU, 1);
