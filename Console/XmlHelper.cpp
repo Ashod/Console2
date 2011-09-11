@@ -72,6 +72,46 @@ HRESULT XmlHelper::GetDomElement(const CComPtr<IXMLDOMElement>& pRootElement, co
 	return pNode.QueryInterface(&pElement);
 }
 
+/*
+ * Same as GetDomElement, but creates missing parts of the path
+ */
+HRESULT XmlHelper::CreateDomElement(const CComPtr<IXMLDOMElement>& pRootElement, CString path, CComPtr<IXMLDOMElement>& pElement)
+{
+	if (NULL == pRootElement)
+		return E_FAIL;
+
+	CComPtr<IXMLDOMDocument> pDocument;
+	if (FAILED(pRootElement->get_ownerDocument(&pDocument)))
+		return E_FAIL;
+
+	CComPtr<IXMLDOMElement> pParent = pRootElement;
+
+	int pos = 0;
+	CString token = path.Tokenize(L"/", pos);
+	while (!token.IsEmpty()) {
+		CComPtr<IXMLDOMNode> pNode;
+		if (S_OK != pParent->selectSingleNode(CComBSTR(token), &pNode)) {
+			CComPtr<IXMLDOMElement> pChild;
+			int tagLength = token.Find(L'[');
+			if (-1 == tagLength)
+				tagLength = token.GetLength();
+
+			if (FAILED(pDocument->createElement(CComBSTR(token.Left(tagLength)), &pChild)))
+				return E_FAIL;
+			if (FAILED(pParent->appendChild(pChild, &pNode)))
+				return E_FAIL;
+			// TODO: add some text nodes for a better formatting
+		}
+
+		pParent = pNode;
+
+		token = path.Tokenize(L"/", pos);
+	}
+
+	return pParent.QueryInterface(&pElement);
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 
