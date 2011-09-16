@@ -35,7 +35,9 @@ class XmlHelper
 		static void SetAttribute(const CComPtr<IXMLDOMElement>& pElement, const CComBSTR& bstrName, bool bValue);
 		static void SetAttribute(const CComPtr<IXMLDOMElement>& pElement, const CComBSTR& bstrName, const wstring& strValue);
 
-		static void SetRGBAttribute(const CComPtr<IXMLDOMElement>& pElement, COLORREF& crValue);
+		static void SetRGBAttribute(const CComPtr<IXMLDOMElement>& pElement, const COLORREF& crValue);
+		static void SaveColors(CComPtr<IXMLDOMElement>& pElement, const COLORREF colors[16]);
+		static void LoadColors(const CComPtr<IXMLDOMElement>& pElement, COLORREF colors[16]);
 };
 
 //////////////////////////////////////////////////////////////////////////////

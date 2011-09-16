@@ -616,6 +616,7 @@ struct TabData
 	, crBackgroundColor(RGB(0, 0, 0))
 	, menuBitmap()
 	, imageData()
+	, bInheritedColors(true)
 	{
 	}
 
@@ -638,6 +639,15 @@ struct TabData
 	CBitmap							menuBitmap;
 
 	ImageData						imageData;
+
+	bool							bInheritedColors;
+	COLORREF						consoleColors[16];
+
+	void SetColors(const COLORREF colors[16], const bool bForced)
+	{
+		if (bInheritedColors || bForced)
+			::CopyMemory(consoleColors, colors, sizeof(consoleColors));
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////////

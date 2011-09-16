@@ -90,18 +90,7 @@ bool ConsoleSettings::Load(const CComPtr<IXMLDOMElement>& pSettingsRoot)
 	XmlHelper::GetAttribute(pConsoleElement, CComBSTR(L"start_hidden"), bStartHidden, false);
 	XmlHelper::GetAttribute(pConsoleElement, CComBSTR(L"save_size"), bSaveSize, false);
 
-	for (DWORD i = 0; i < 16; ++i)
-	{
-		CComPtr<IXMLDOMElement>	pFontColorElement;
-
-		if (FAILED(XmlHelper::GetDomElement(pConsoleElement, CComBSTR(str(wformat(L"colors/color[%1%]") % i).c_str()), pFontColorElement))) continue;
-
-		DWORD id;
-
-		XmlHelper::GetAttribute(pFontColorElement, CComBSTR(L"id"), id, i);
-		XmlHelper::GetRGBAttribute(pFontColorElement, consoleColors[id], consoleColors[i]);
-	}
-
+	XmlHelper::LoadColors(pConsoleElement, consoleColors);
 	return true;
 }
 
@@ -127,16 +116,7 @@ bool ConsoleSettings::Save(const CComPtr<IXMLDOMElement>& pSettingsRoot)
 	XmlHelper::SetAttribute(pConsoleElement, CComBSTR(L"start_hidden"), bStartHidden);
 	XmlHelper::SetAttribute(pConsoleElement, CComBSTR(L"save_size"), bSaveSize);
 
-	for (DWORD i = 0; i < 16; ++i)
-	{
-		CComPtr<IXMLDOMElement>	pFontColorElement;
-
-		if (FAILED(XmlHelper::GetDomElement(pConsoleElement, CComBSTR(str(wformat(L"colors/color[%1%]") % i).c_str()), pFontColorElement))) continue;
-
-		XmlHelper::SetAttribute(pFontColorElement, CComBSTR(L"id"), i);
-		XmlHelper::SetRGBAttribute(pFontColorElement, consoleColors[i]);
-	}
-
+	XmlHelper::SaveColors(pConsoleElement, consoleColors);
 	return true;
 }
 
@@ -1566,6 +1546,13 @@ bool TabSettings::Load(const CComPtr<IXMLDOMElement>& pSettingsRoot)
 				}
 			}
 		}
+
+		CComPtr<IXMLDOMElement> pColors;
+		if (SUCCEEDED(XmlHelper::GetDomElement(pTabElement, CComBSTR(L"colors"), pColors)))
+		{
+			tabData->bInheritedColors = false;
+			XmlHelper::LoadColors(pTabElement, tabData->consoleColors);
+		}
 	}
 
 	return true;
@@ -1709,6 +1696,11 @@ bool TabSettings::Save(const CComPtr<IXMLDOMElement>& pSettingsRoot)
 		SettingsBase::AddTextNode(pSettingsDoc, pNewTabElement, CComBSTR(L"\n\t\t"));
 
 		pTabsElement->appendChild(pNewTabElement, &pNewTabOut);
+
+		if (!(*itTab)->bInheritedColors)
+		{
+			XmlHelper::SaveColors(pNewTabElement, (*itTab)->consoleColors);
+		}
 
 		// this is just for pretty printing
 		if (itTab == itLastTab)

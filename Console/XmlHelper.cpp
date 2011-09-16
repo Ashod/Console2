@@ -296,7 +296,7 @@ void XmlHelper::SetAttribute(const CComPtr<IXMLDOMElement>& pElement, const CCom
 
 //////////////////////////////////////////////////////////////////////////////
 
-void XmlHelper::SetRGBAttribute(const CComPtr<IXMLDOMElement>& pElement, COLORREF& crValue)
+void XmlHelper::SetRGBAttribute(const CComPtr<IXMLDOMElement>& pElement, const COLORREF& crValue)
 {
 	SetAttribute(pElement, CComBSTR(L"r"), GetRValue(crValue));
 	SetAttribute(pElement, CComBSTR(L"g"), GetGValue(crValue));
@@ -304,3 +304,31 @@ void XmlHelper::SetRGBAttribute(const CComPtr<IXMLDOMElement>& pElement, COLORRE
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+void XmlHelper::LoadColors(const CComPtr<IXMLDOMElement>& pElement, COLORREF colors[16])
+{
+	for (DWORD i = 0; i < 16; ++i)
+	{
+		CComPtr<IXMLDOMElement>	pFontColorElement;
+
+		if (FAILED(GetDomElement(pElement, CComBSTR(str(wformat(L"colors/color[%1%]") % i).c_str()), pFontColorElement))) continue;
+
+		DWORD id;
+
+		GetAttribute(pFontColorElement, CComBSTR(L"id"), id, i);
+		GetRGBAttribute(pFontColorElement, colors[id], colors[i]);
+	}
+}
+
+void XmlHelper::SaveColors(CComPtr<IXMLDOMElement>& pElement, const COLORREF colors[16])
+{
+	for (DWORD i = 0; i < 16; ++i)
+	{
+		CComPtr<IXMLDOMElement>	pFontColorElement;
+
+		if (FAILED(CreateDomElement(pElement, CString(str(wformat(L"colors/color[%1%]") % i).c_str()), pFontColorElement))) continue;
+
+		SetAttribute(pFontColorElement, CComBSTR(L"id"), i);
+		SetRGBAttribute(pFontColorElement, colors[i]);
+	}
+}
