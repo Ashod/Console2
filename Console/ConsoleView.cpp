@@ -233,6 +233,8 @@ LRESULT ConsoleView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	// create offscreen buffers
 	CreateOffscreenBuffers();
 
+	UpdateColors();
+
 	// TODO: put this in console size change handler
 	m_screenBuffer.reset(new CharInfo[m_consoleHandler.GetConsoleParams()->dwRows*m_consoleHandler.GetConsoleParams()->dwColumns]);
 //	::ZeroMemory(m_screenBuffer.get(), sizeof(CHAR_INFO)*m_consoleHandler.GetConsoleParams()->dwRows*m_consoleHandler.GetConsoleParams()->dwColumns);
@@ -1803,20 +1805,20 @@ void ConsoleView::RepaintText(CDC& dc)
 		attrBG = (m_screenBuffer[dwOffset].charInfo.Attributes & 0xFF) >> 4;
 		
 		// here we decide how to paint text over the background
-		if (m_consoleSettings.consoleColors[attrBG] == RGB(0, 0, 0))
+		if (m_tabData->consoleColors[attrBG] == RGB(0, 0, 0))
 		{
 			nBkMode		= TRANSPARENT;
 		}
 		else
 		{
 			nBkMode		= OPAQUE;
-			crBkColor	= m_consoleSettings.consoleColors[attrBG];
+			crBkColor	= m_tabData->consoleColors[attrBG];
 		}
 
 		dc.SetBkMode(nBkMode);
 		dc.SetBkColor(crBkColor);
 
-		crTxtColor		= m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_consoleSettings.consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF];
+		crTxtColor		= m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_tabData->consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF];
 		dc.SetTextColor(crTxtColor);
 
 		strText		= m_screenBuffer[dwOffset].charInfo.Char.UnicodeChar;
@@ -1836,7 +1838,7 @@ void ConsoleView::RepaintText(CDC& dc)
 			
 			attrBG = (m_screenBuffer[dwOffset].charInfo.Attributes & 0xFF) >> 4;
 
-			if (m_consoleSettings.consoleColors[attrBG] == RGB(0, 0, 0))
+			if (m_tabData->consoleColors[attrBG] == RGB(0, 0, 0))
 			{
 				if (nBkMode != TRANSPARENT)
 				{
@@ -1851,16 +1853,16 @@ void ConsoleView::RepaintText(CDC& dc)
 					nBkMode = OPAQUE;
 					bTextOut = true;
 				}
-				if (crBkColor != m_consoleSettings.consoleColors[attrBG])
+				if (crBkColor != m_tabData->consoleColors[attrBG])
 				{
-					crBkColor = m_consoleSettings.consoleColors[attrBG];
+					crBkColor = m_tabData->consoleColors[attrBG];
 					bTextOut = true;
 				}
 			}
 
-			if (crTxtColor != (m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_consoleSettings.consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF]))
+			if (crTxtColor != (m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_tabData->consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF]))
 			{
-				crTxtColor = m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_consoleSettings.consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF];
+				crTxtColor = m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_tabData->consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF];
 				bTextOut = true;
 			}
 
@@ -1976,18 +1978,18 @@ void ConsoleView::RepaintTextChanges(CDC& dc)
 				attrBG = (m_screenBuffer[dwOffset].charInfo.Attributes & 0xFF) >> 4;
 
 				// here we decide how to paint text over the background
-				if (m_consoleSettings.consoleColors[attrBG] == RGB(0, 0, 0))
+				if (m_tabData->consoleColors[attrBG] == RGB(0, 0, 0))
 				{
 					dc.SetBkMode(TRANSPARENT);
 				}
 				else
 				{
 					dc.SetBkMode(OPAQUE);
-					dc.SetBkColor(m_consoleSettings.consoleColors[attrBG]);
+					dc.SetBkColor(m_tabData->consoleColors[attrBG]);
 				}
 				
-				dc.SetBkColor(m_consoleSettings.consoleColors[attrBG]);
-				dc.SetTextColor(m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_consoleSettings.consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF]);
+				dc.SetBkColor(m_tabData->consoleColors[attrBG]);
+				dc.SetTextColor(m_appearanceSettings.fontSettings.bUseColor ? m_appearanceSettings.fontSettings.crFontColor : m_tabData->consoleColors[m_screenBuffer[dwOffset].charInfo.Attributes & 0xF]);
 
 				dc.ExtTextOut(dwX, dwY, ETO_CLIPPED, &rect, &(m_screenBuffer[dwOffset].charInfo.Char.UnicodeChar), 1, NULL);
 			}
@@ -2341,6 +2343,11 @@ COORD ConsoleView::GetConsoleCoord(const CPoint& clientPoint)
 	if (consolePoint.Y > srWindow.Bottom) consolePoint.Y = srWindow.Bottom;
 
 	return consolePoint;
+}
+
+void ConsoleView::UpdateColors()
+{
+	m_tabData->SetColors(g_settingsHandler->GetConsoleSettings().consoleColors, false);
 }
 
 /////////////////////////////////////////////////////////////////////////////

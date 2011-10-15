@@ -1526,6 +1526,14 @@ LRESULT MainFrame::OnEditSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 		SetZOrder(g_settingsHandler->GetAppearanceSettings().positionSettings.zOrder);
 
+		{
+			MutexLock	viewMapLock(m_viewsMutex);
+			for each (pair<HWND, shared_ptr<ConsoleView>> view in m_views)
+			{
+				view.second->UpdateColors();
+			}
+		}
+
 		m_activeView->InitializeScrollbars();
 		m_activeView->RecreateOffscreenBuffers();
 		AdjustWindowSize(false);

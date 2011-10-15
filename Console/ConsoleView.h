@@ -105,7 +105,7 @@ class ConsoleView
 		CPoint GetCellSize() { return CPoint(m_nCharWidth, m_nCharHeight); };
 
 		ConsoleHandler& GetConsoleHandler() { return m_consoleHandler; }
-		shared_ptr<TabData> GetTabData() { return m_tabData; }
+		void UpdateColors();
 
 		bool GetConsoleWindowVisible() const { return m_bConsoleWindowVisible; }
 		void SetConsoleWindowVisible(bool bVisible);
