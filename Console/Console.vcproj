@@ -634,6 +634,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PageSettingsTab.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PageSettingsTabs1.h"
 				>
 			</File>
