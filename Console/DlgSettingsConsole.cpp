@@ -195,6 +195,7 @@ LRESULT DlgSettingsConsole::OnClickedBtnBrowseDir(WORD /*wNotifyCode*/, WORD /*w
 LRESULT DlgSettingsConsole::OnClickedBtnResetColors(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	::CopyMemory(m_consoleSettings.consoleColors, m_consoleSettings.defaultConsoleColors, sizeof(m_consoleSettings.defaultConsoleColors));
+	m_consoleSettings.Save(m_pOptionsRoot);
 
 	DoDataExchange(DDX_LOAD);
 	Invalidate();
@@ -214,6 +215,7 @@ LRESULT DlgSettingsConsole::OnClickedClrBtn(WORD /*wNotifyCode*/, WORD wID, HWND
 	{
 		// update color
 		m_consoleSettings.consoleColors[wID-IDC_CLR_00] = dlg.GetColor();
+		m_consoleSettings.Save(m_pOptionsRoot);
 		CWindow(hWndCtl).Invalidate();
 	}
 
