@@ -69,6 +69,7 @@
 #define IDS_TABBINGFRAMEWORK_TIPS_CLOSE 189
 #define IDS_COMMAND_ACTIVATE_CONSOLE    190
 #define IDS_COMMAND_STOP_SCROLLING      191
+#define IDS_SETTINGS_TAB_COLORS         192
 #define IDI_ICON1                       203
 #define IDD_RENAME_TAB                  204
 #define IDD_SETTINGS_MAIN               205
@@ -85,6 +86,7 @@
 #define IDD_SETTINGS_MOUSE              215
 #define IDD_CREDENTIALS                 216
 #define IDR_SYSTEM_MENU                 217
+#define IDD_SETTINGS_TABS_COLORS        218
 #define IDC_TAB_NAME                    1000
 #define IDC_APPLY                       1001
 #define IDC_TREE_SECTIONS               1002
@@ -154,6 +156,7 @@
 #define IDC_SPIN_BUFFER_ROWS2           1065
 #define IDC_STATIC_ACTIVE_ALPHA         1066
 #define IDC_SPIN_BUFFER_COLUMNS2        1066
+#define IDC_BTN_INHERIT_COLORS          1066
 #define IDC_STATIC_INACTIVE_ALPHA       1067
 #define IDC_TRANSPARENCY_TYPE           1068
 #define IDC_TRANSPARENCY_TYPE1          1069
@@ -347,7 +350,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        218
+#define _APS_NEXT_RESOURCE_VALUE        220
 #define _APS_NEXT_COMMAND_VALUE         32794
 #define _APS_NEXT_CONTROL_VALUE         1178
 #define _APS_NEXT_SYMED_VALUE           101

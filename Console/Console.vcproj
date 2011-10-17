@@ -481,6 +481,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PageSettingsTabsColors.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SelectionHandler.cpp"
 				>
 			</File>
@@ -643,6 +647,10 @@
 			</File>
 			<File
 				RelativePath=".\PageSettingsTabs2.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PageSettingsTabsColors.h"
 				>
 			</File>
 			<File

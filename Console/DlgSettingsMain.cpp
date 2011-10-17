@@ -149,7 +149,8 @@ void DlgSettingsMain::CreateSettingsTree()
 
 
 	// create console settings dialog
-	shared_ptr<DlgSettingsBase>	dlgConsole(dynamic_cast<DlgSettingsBase*>(new DlgSettingsConsole(m_pSettingsRoot)));
+	DlgSettingsConsole *consoleSettings = new DlgSettingsConsole(m_pSettingsRoot);
+	shared_ptr<DlgSettingsBase>	dlgConsole(dynamic_cast<DlgSettingsBase*>(consoleSettings));
 	AddDialogToTree(IDS_SETTINGS_CONSOLE, dlgConsole, rect);
 
 	// create appearance settings dialog
@@ -173,7 +174,7 @@ void DlgSettingsMain::CreateSettingsTree()
 	AddDialogToTree(IDS_SETTINGS_MOUSE, dlgMouseCmds, rect, htiHotkeys);
 
 	// create tabs settings dialog
-	shared_ptr<DlgSettingsBase>	dlgTabs(dynamic_cast<DlgSettingsBase*>(new DlgSettingsTabs(m_pSettingsRoot)));
+	shared_ptr<DlgSettingsBase>	dlgTabs(dynamic_cast<DlgSettingsBase*>(new DlgSettingsTabs(m_pSettingsRoot, consoleSettings->m_consoleSettings)));
 	AddDialogToTree(IDS_SETTINGS_TABS, dlgTabs, rect);
 
 	m_treeCtrl.Expand(htiAppearance);

@@ -14,15 +14,17 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-DlgSettingsTabs::DlgSettingsTabs(CComPtr<IXMLDOMElement>& pOptionsRoot)
+DlgSettingsTabs::DlgSettingsTabs(CComPtr<IXMLDOMElement>& pOptionsRoot, ConsoleSettings &consoleSettings)
 : DlgSettingsBase(pOptionsRoot)
 , m_page1()
 , m_page2()
+, m_page3(consoleSettings)
 {
 	IDD = IDD_SETTINGS_TABS;
 
 	m_pages[0] = &m_page1;
 	m_pages[1] = &m_page2;
+	m_pages[2] = &m_page3;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -62,6 +64,8 @@ LRESULT DlgSettingsTabs::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	m_tabCtrl.InsertItem(0, strColumn);
 	strColumn.LoadString(IDS_SETTINGS_COLUMN_BACKGROUNDTAB);
 	m_tabCtrl.InsertItem(1, strColumn);
+	strColumn.LoadString(IDS_SETTINGS_TAB_COLORS);
+	m_tabCtrl.InsertItem(2, strColumn);
 
 	CRect	rect;
 	m_tabCtrl.GetWindowRect(&rect);
@@ -75,6 +79,9 @@ LRESULT DlgSettingsTabs::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	m_page2.Create(m_hWnd, rect);
 	m_page2.SetWindowPos(NULL, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER);
+
+	m_page3.Create(m_hWnd, rect);
+	m_page3.SetWindowPos(NULL, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER);
 
 	m_tabCtrl.SetCurSel(0);
 	m_listCtrl.SelectItem(0);
