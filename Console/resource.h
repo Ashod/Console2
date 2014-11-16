@@ -87,6 +87,7 @@
 #define IDD_CREDENTIALS                 216
 #define IDR_SYSTEM_MENU                 217
 #define IDD_SETTINGS_TABS_COLORS        218
+#define IDR_DEF_SETTINGS                219
 #define IDC_TAB_NAME                    1000
 #define IDC_APPLY                       1001
 #define IDC_TREE_SECTIONS               1002
