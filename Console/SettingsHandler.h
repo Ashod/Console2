@@ -692,7 +692,8 @@ class SettingsHandler
 		{
 			dirTypeExe		= 0,
 			dirTypeUser		= 1,
-			dirTypeCustom	=2
+			dirTypeCustom	= 2,
+            dirTypeMem      = 3
 		};
 
 	public:
@@ -703,11 +704,12 @@ class SettingsHandler
 
 		bool LoadSettings(const wstring& strSettingsFileName);
 		bool SaveSettings();
+        bool RestoreDefaultSettings(const wstring& strSettingsFileName);
 
 		wstring	GetSettingsFileName() const { return m_strSettingsPath+m_strSettingsFileName; }
 
 		SettingsDirType GetSettingsDirType() const { return m_settingsDirType; }
-		void SetUserDataDir(SettingsDirType settingsDirType);
+		bool SetUserDataDir(SettingsDirType settingsDirType);
 
 		ConsoleSettings& GetConsoleSettings() { return m_consoleSettings; }
 		AppearanceSettings& GetAppearanceSettings() { return m_appearanceSettings; }
@@ -717,6 +719,9 @@ class SettingsHandler
 		TabSettings& GetTabSettings() { return m_tabSettings; }
 
 	private:
+        bool LoadSettings();
+        std::string GetDefaultSettingsXml() const;
+        bool WriteDefaultSettings(const std::string& xml) const;
 
 		CComPtr<IXMLDOMDocument>	m_pSettingsDocument;
 		CComPtr<IXMLDOMElement>		m_pSettingsRoot;

@@ -1335,7 +1335,7 @@ bool MouseSettings::Load(const CComPtr<IXMLDOMElement>& pSettingsRoot)
 		bool	bUseCtrl;
 		bool	bUseShift;
 		bool	bUseAlt;
-		
+
 		XmlHelper::GetAttribute(pActionElement, CComBSTR(L"name"), strName, L"");
 		XmlHelper::GetAttribute(pActionElement, CComBSTR(L"button"), dwButton, 0);
 		XmlHelper::GetAttribute(pActionElement, CComBSTR(L"ctrl"), bUseCtrl, false);
@@ -1771,92 +1771,85 @@ bool SettingsHandler::LoadSettings(const wstring& strSettingsFileName)
 
 	size_t pos = strSettingsFileName.rfind(L'\\');
 
-	if (pos == wstring::npos)
+    if (m_settingsDirType == dirTypeMem)
+    {
+        // Nothing to do.
+    }
+    else
+    if (pos == wstring::npos)
 	{
 		// no path, first try with user's APPDATA dir
-
-		wchar_t wszAppData[32767];
-		::ZeroMemory(wszAppData, sizeof(wszAppData));
-		::GetEnvironmentVariable(L"APPDATA", wszAppData, _countof(wszAppData));
-
 		m_strSettingsFileName = strSettingsFileName;
-
-		if (wszAppData == NULL)
+        if (!SetUserDataDir(dirTypeUser))
 		{
 			hr = E_FAIL;
 		}
 		else
 		{
-			m_strSettingsPath	= wstring(wszAppData) + wstring(L"\\Console\\");
-			m_settingsDirType	= dirTypeUser;
-
 			hr = XmlHelper::OpenXmlDocument(
-								GetSettingsFileName(), 
-								m_pSettingsDocument, 
+								GetSettingsFileName(),
+								m_pSettingsDocument,
 								m_pSettingsRoot);
 		}
 
-		if (FAILED(hr))
+        if (FAILED(hr) && SetUserDataDir(dirTypeExe))
 		{
-			m_strSettingsPath	= Helpers::GetModulePath(NULL);
-			m_settingsDirType	= dirTypeExe;
-
 			hr = XmlHelper::OpenXmlDocument(
-								GetSettingsFileName(), 
-								m_pSettingsDocument, 
+								GetSettingsFileName(),
+								m_pSettingsDocument,
 								m_pSettingsRoot);
-
-			if (FAILED(hr)) return false;
 		}
 	}
 	else
 	{
 		// settings file name with a path
-		m_strSettingsPath		= strSettingsFileName.substr(0, pos+1);
-		m_strSettingsFileName	= strSettingsFileName.substr(pos+1);
+		const std::wstring path = strSettingsFileName.substr(0, pos+1);
+		m_strSettingsFileName = strSettingsFileName.substr(pos+1);
 
-		wchar_t wszAppData[32767];
-		::ZeroMemory(wszAppData, sizeof(wszAppData));
-		::GetEnvironmentVariable(L"APPDATA", wszAppData, _countof(wszAppData));
-
-		if (equals(m_strSettingsPath, wstring(wszAppData) + wstring(L"\\Console\\"), is_iequal()))
+        if (SetUserDataDir(dirTypeUser) && equals(path, m_strSettingsPath, is_iequal()))
 		{
-			m_settingsDirType = dirTypeUser;
+			// User's AppData folder.
 		}
-		else if (equals(m_strSettingsPath, Helpers::GetModulePath(NULL), is_iequal()))
+        else if (SetUserDataDir(dirTypeExe) && equals(path, m_strSettingsPath, is_iequal()))
 		{
-			m_settingsDirType = dirTypeExe;
-		}
+            // Next to the binary.
+        }
 		else
 		{
 			m_settingsDirType = dirTypeCustom;
 		}
 
 		hr = XmlHelper::OpenXmlDocument(
-							strSettingsFileName, 
-							m_pSettingsDocument, 
+							strSettingsFileName,
+							m_pSettingsDocument,
 							m_pSettingsRoot);
-
-		if (FAILED(hr)) return false;
 	}
 
-	// load settings' sections
-	m_consoleSettings.Load(m_pSettingsRoot);
-	m_appearanceSettings.Load(m_pSettingsRoot);
-	m_behaviorSettings.Load(m_pSettingsRoot);
-	m_hotKeys.Load(m_pSettingsRoot);
-	m_mouseSettings.Load(m_pSettingsRoot);
-
-	m_tabSettings.SetDefaults(m_consoleSettings.strShell, m_consoleSettings.strInitialDir);
-	m_tabSettings.Load(m_pSettingsRoot);
-
-	return true;
+    // load settings' sections
+    return (SUCCEEDED(hr) ? LoadSettings() : false);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+bool SettingsHandler::LoadSettings()
+{
+    bool res = (m_pSettingsRoot ? true : false);
+    res = res && m_consoleSettings.Load(m_pSettingsRoot);
+    res = res && m_appearanceSettings.Load(m_pSettingsRoot);
+    res = res && m_behaviorSettings.Load(m_pSettingsRoot);
+    res = res && m_hotKeys.Load(m_pSettingsRoot);
+    res = res && m_mouseSettings.Load(m_pSettingsRoot);
+    if (res)
+    {
+        m_tabSettings.SetDefaults(m_consoleSettings.strShell, m_consoleSettings.strInitialDir);
+        res = m_tabSettings.Load(m_pSettingsRoot);
+    }
+
+    return res;
+}
 
 bool SettingsHandler::SaveSettings()
 {
@@ -1867,9 +1860,8 @@ bool SettingsHandler::SaveSettings()
 	m_mouseSettings.Save(m_pSettingsRoot);
 	m_tabSettings.Save(m_pSettingsRoot);
 
-	HRESULT hr = m_pSettingsDocument->save(CComVariant(GetSettingsFileName().c_str()));
-
-	return SUCCEEDED(hr) ? true : false;
+	const HRESULT hr = m_pSettingsDocument->save(CComVariant(GetSettingsFileName().c_str()));
+	return SUCCEEDED(hr);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1877,23 +1869,158 @@ bool SettingsHandler::SaveSettings()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void SettingsHandler::SetUserDataDir(SettingsDirType settingsDirType)
+bool SettingsHandler::RestoreDefaultSettings(const wstring& strSettingsFileName)
+{
+    const std::string settingsXml = GetDefaultSettingsXml();
+    if (settingsXml.empty())
+    {
+        return false;
+    }
+
+    const std::wstring xml(settingsXml.begin(), settingsXml.end()); // ASCII only!
+    const HRESULT hr = XmlHelper::LoadXmlDocument(xml,
+                                                  m_pSettingsDocument,
+                                                  m_pSettingsRoot);
+    if (FAILED(hr) || !LoadSettings())
+    {
+        // Couldn't load even from the resource!
+        return false;
+    }
+
+    size_t pos = strSettingsFileName.rfind(L'\\');
+    if (pos == wstring::npos)
+    {
+        // no path, first try with user's APPDATA dir
+        m_strSettingsFileName = strSettingsFileName;
+        if (SetUserDataDir(dirTypeExe) && WriteDefaultSettings(settingsXml))
+        {
+            // Written next to the binary.
+            return true;
+        }
+
+        if (!SetUserDataDir(dirTypeUser) && !SetUserDataDir(dirTypeMem))
+        {
+            // No where else to go!
+            return false;
+        }
+    }
+    else
+    {
+        // settings file name with a path
+        const std::wstring path = strSettingsFileName.substr(0, pos + 1);
+        m_strSettingsFileName = strSettingsFileName.substr(pos + 1);
+
+        if (SetUserDataDir(dirTypeUser) && equals(path, m_strSettingsPath, is_iequal()))
+        {
+            // User's AppData folder.
+        }
+        else if (SetUserDataDir(dirTypeExe) && equals(path, m_strSettingsPath, is_iequal()))
+        {
+            // Next to the binary.
+        }
+        else
+        {
+            m_settingsDirType = dirTypeCustom;
+        }
+    }
+
+    if (m_settingsDirType != dirTypeMem &&
+        WriteDefaultSettings(settingsXml))
+    {
+        return true;
+    }
+
+    // Memory.
+    SetUserDataDir(dirTypeMem);
+    return SUCCEEDED(hr);
+}
+
+bool SettingsHandler::WriteDefaultSettings(const std::string& xml) const
+{
+    // CREATE_ALWAYS is useful for restoring corrupted files.
+    // If the file that exists were valid, it'd have loaded alrady.
+    // So no harm at this point in overwriting it.
+    const std::wstring filename = GetSettingsFileName();
+    const HANDLE h = ::CreateFile(filename.c_str(),
+                                    GENERIC_WRITE,
+                                    FILE_SHARE_READ, NULL, CREATE_ALWAYS,
+                                    FILE_ATTRIBUTE_NORMAL, NULL);
+    if (h != INVALID_HANDLE_VALUE)
+    {
+        DWORD written = 0;
+        const BOOL res = ::WriteFile(h, xml.c_str(), xml.size(), &written, NULL);
+        ::CloseHandle(h);
+        return (res && written == xml.size());
+    }
+
+    return false;
+}
+
+std::string SettingsHandler::GetDefaultSettingsXml() const
+{
+    const HRSRC hres = FindResource(NULL, MAKEINTRESOURCE(IDR_DEF_SETTINGS), RT_HTML);
+    if (hres == 0)
+    {
+        _tcprintf(_T("Failed to locate default settings resource."));
+        return std::string();
+    }
+
+    const HGLOBAL hbytes = LoadResource(NULL, hres);
+    if (hbytes == 0)
+    {
+        _tcprintf(_T("Failed to locate default settings resource."));
+        return std::string();
+    }
+
+    const LPVOID pdata = LockResource(hbytes);
+    if (pdata == 0)
+    {
+        _tcprintf(_T("Failed to locate default settings resource."));
+        return std::string();
+    }
+
+    //const DWORD size = SizeofResource(NULL, hres);
+    return std::string(static_cast<LPCSTR>(pdata));
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+bool SettingsHandler::SetUserDataDir(SettingsDirType settingsDirType)
 {
 	if (settingsDirType == dirTypeExe)
 	{
-		m_strSettingsPath = Helpers::GetModulePath(NULL);
+        const std::wstring path = Helpers::GetModulePath(NULL);
+        if (path.empty())
+        {
+            return false;
+        }
+
+        m_strSettingsPath = path;
 	}
 	else if (settingsDirType == dirTypeUser)
 	{
 		wchar_t wszAppData[32767];
 		::ZeroMemory(wszAppData, sizeof(wszAppData));
 		::GetEnvironmentVariable(L"APPDATA", wszAppData, _countof(wszAppData));
+        if (wszAppData == NULL)
+        {
+            return false;
+        }
 
 		m_strSettingsPath = wstring(wszAppData) + wstring(L"\\Console\\");
-		::CreateDirectory(m_strSettingsPath.c_str(), NULL);
+        if ((::CreateDirectory(m_strSettingsPath.c_str(), NULL) == 0) &&
+            (GetLastError() != ERROR_ALREADY_EXISTS))
+        {
+            return false;
+        }
 	}
+    else if (settingsDirType == dirTypeMem)
+    {
+        m_strSettingsPath = L"";
+    }
 
 	m_settingsDirType = settingsDirType;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////

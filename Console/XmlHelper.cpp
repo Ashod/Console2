@@ -18,7 +18,7 @@ HRESULT XmlHelper::OpenXmlDocument(const wstring& strFilename, CComPtr<IXMLDOMDo
 
 	pXmlDocument.Release();
 	pRootElement.Release();
-	
+
 	hr = pXmlDocument.CoCreateInstance(__uuidof(DOMDocument));
 	if (FAILED(hr) || (pXmlDocument.p == NULL)) return E_FAIL;
 
@@ -56,6 +56,25 @@ HRESULT XmlHelper::OpenXmlDocument(const wstring& strFilename, CComPtr<IXMLDOMDo
 
 //////////////////////////////////////////////////////////////////////////////
 
+HRESULT XmlHelper::LoadXmlDocument(const wstring& strXml, CComPtr<IXMLDOMDocument>& pXmlDocument, CComPtr<IXMLDOMElement>& pRootElement)
+{
+	pXmlDocument.Release();
+	pRootElement.Release();
+
+    VARIANT_BOOL bLoadSuccess = 0;
+    HRESULT hr = pXmlDocument.CoCreateInstance(__uuidof(DOMDocument));
+    if (SUCCEEDED(hr) && (pXmlDocument.p != NULL))
+    {
+        hr = pXmlDocument->loadXML(CComBSTR(strXml.c_str()), &bLoadSuccess);
+    }
+
+    if (SUCCEEDED(hr) && bLoadSuccess)
+    {
+        hr = pXmlDocument->get_documentElement(&pRootElement);
+    }
+
+    return hr;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -63,13 +82,11 @@ HRESULT XmlHelper::GetDomElement(const CComPtr<IXMLDOMElement>& pRootElement, co
 {
 	HRESULT					hr = S_OK;
 	CComPtr<IXMLDOMNode>	pNode;
-	
+
 	if (pRootElement.p == NULL) return E_FAIL;
 
 	hr = pRootElement->selectSingleNode(bstrPath, &pNode);
-	if (hr != S_OK) return E_FAIL;
-
-	return pNode.QueryInterface(&pElement);
+    return (SUCCEEDED(hr) ? pNode.QueryInterface(&pElement) : hr);
 }
 
 /*

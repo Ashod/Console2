@@ -63,8 +63,8 @@ class NoTaskbarParent
 
 void ParseCommandLine
 (
-	LPTSTR lptstrCmdLine, 
-	wstring& strConfigFile, 
+	LPTSTR lptstrCmdLine,
+	wstring& strConfigFile,
 	bool &bReuse
 )
 {
@@ -125,7 +125,7 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	bool			bCreateList = false;
 
 	ParseCommandLine(
-		lpstrCmdLine, 
+		lpstrCmdLine,
 		strConfigFile,
 		bReuse);
 
@@ -139,8 +139,13 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	if (!g_settingsHandler->LoadSettings(Helpers::ExpandEnvironmentStrings(strConfigFile)))
 	{
-		//TODO: error handling
-		return 1;
+		// Extract default from resources and try again.
+        if (!g_settingsHandler->RestoreDefaultSettings(Helpers::ExpandEnvironmentStrings(strConfigFile)))
+        {
+            ATLTRACE(_T("Failed to load the settings file or defaults!\n"));
+            ::MessageBoxW(NULL, L"Failed to load the settings file or restore the default.", L"Console2 - Error", MB_OK | MB_ICONERROR);
+            return 1;
+        }
 	}
 
 	if (bReuse && HandleReuse(lpstrCmdLine))
@@ -172,6 +177,12 @@ int Run(LPTSTR lpstrCmdLine = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		sharedInstance.Create(L"Console", 1, syncObjNone, _T(""));
 		sharedInstance = wndMain.m_hWnd;
 	}
+
+    if (g_settingsHandler->GetSettingsDirType() == SettingsHandler::dirTypeMem)
+    {
+        ATLTRACE(_T("In-memory settings!\n"));
+        wndMain.MessageBoxW(L"Failed to load the settings file or restore the default.\nAll settings changes will be lost on exit.", L"Console2 - Volatile Settings", MB_OK | MB_ICONWARNING);
+    }
 
 	int nRet = theLoop.Run();
 
@@ -396,7 +407,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		return 0;
 
 	HRESULT hRes = ::OleInitialize(NULL); // IDropTargetHelper does not work with CoInitialize
-// If you are running on NT 4.0 or higher you can use the following call instead to 
+// If you are running on NT 4.0 or higher you can use the following call instead to
 // make the EXE free threaded. This means that calls come in on a random RPC thread.
 //	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
 	ATLASSERT(SUCCEEDED(hRes));
