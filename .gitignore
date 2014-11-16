@@ -7,6 +7,10 @@ help/console.chm
 
 *.aps
 *.user
+ipch
+*.sdf
+*.opensdf
+*.suo
 
 # ignore resource.h in localization projects
 # it's supposed to be copied from the main folder
