@@ -996,13 +996,15 @@ bool ConsoleView::GetMaxRect(CRect& maxClientRect)
 	maxClientRect.right	= m_consoleHandler.GetConsoleParams()->dwMaxColumns*m_nCharWidth + 2*stylesSettings.dwInsideBorder;
 	maxClientRect.bottom= m_consoleHandler.GetConsoleParams()->dwMaxRows*m_nCharHeight + 2*stylesSettings.dwInsideBorder;
 
-	/* TODO: this calculation does not work very well for multiple monitors
-	CWindow desktopWindow(::GetDesktopWindow());
-	CRect	rectDesktop;
-	bool	bRecalc = false;
+	// TODO: this calculation does not work very well for multiple monitors
+    // The desktop is really the virtual desktop with all monitors.
+	CRect rectDesktop;
+    rectDesktop.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    rectDesktop.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    rectDesktop.right = rectDesktop.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    rectDesktop.bottom = rectDesktop.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-	desktopWindow.GetWindowRect(rectDesktop);
-
+	bool bRecalc = false;
 	if (rectDesktop.Width() < maxClientRect.Width())
 	{
 		m_consoleHandler.GetConsoleParams()->dwMaxColumns = (rectDesktop.Width() - 2*stylesSettings.dwInsideBorder) / m_nCharWidth;
@@ -1020,7 +1022,6 @@ bool ConsoleView::GetMaxRect(CRect& maxClientRect)
 		maxClientRect.right	= m_consoleHandler.GetConsoleParams()->dwMaxColumns*m_nCharWidth + 2*stylesSettings.dwInsideBorder;
 		maxClientRect.bottom= m_consoleHandler.GetConsoleParams()->dwMaxRows*m_nCharHeight + 2*stylesSettings.dwInsideBorder;
 	}
-	*/
 
 	if (m_bShowVScroll) maxClientRect.right	+= m_nVScrollWidth;
 	if (m_bShowHScroll) maxClientRect.bottom+= m_nHScrollWidth;
