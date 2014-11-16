@@ -210,13 +210,13 @@ class ConsoleView
 		AppearanceSettings&				m_appearanceSettings;
 		HotKeys&						m_hotkeys;
 
-		shared_ptr<TabData>				m_tabData;
-		shared_ptr<BackgroundImage>		m_background;
+		std::shared_ptr<TabData>				m_tabData;
+		std::shared_ptr<BackgroundImage>		m_background;
 
 		CBrush							m_backgroundBrush;
 
-		shared_ptr<Cursor>				m_cursor;
-		shared_ptr<SelectionHandler>	m_selectionHandler;
+		std::shared_ptr<Cursor>				m_cursor;
+		std::shared_ptr<SelectionHandler>	m_selectionHandler;
 
 		MouseSettings::Command			m_mouseCommand;
 

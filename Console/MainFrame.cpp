@@ -1009,7 +1009,7 @@ LRESULT MainFrame::OnUpdateTitles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 
 	if (itView == m_views.end()) return 0;
 
-	shared_ptr<ConsoleView>	consoleView(itView->second);
+	std::shared_ptr<ConsoleView>	consoleView(itView->second);
 	WindowSettings&			windowSettings	= g_settingsHandler->GetAppearanceSettings().windowSettings;
 
 	if (windowSettings.bUseConsoleTitle)
@@ -1204,7 +1204,7 @@ LRESULT MainFrame::OnTabChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 		}
 		else
 		{
-			m_activeView = shared_ptr<ConsoleView>();
+			m_activeView = std::shared_ptr<ConsoleView>();
 		}
 	}
 
@@ -1664,12 +1664,12 @@ LRESULT MainFrame::OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, 
 //////////////////////////////////////////////////////////////////////////////
 /*
 
-shared_ptr<ConsoleView> MainFrame::GetActiveView()
+std::shared_ptr<ConsoleView> MainFrame::GetActiveView()
 {
-	if (m_views.size() == 0) return shared_ptr<ConsoleView>();
+	if (m_views.size() == 0) return std::shared_ptr<ConsoleView>();
 
 	ConsoleViewMap::iterator	findIt		= m_views.find(m_hWndActive);
-	if (findIt == m_views.end()) return shared_ptr<ConsoleView>();
+	if (findIt == m_views.end()) return std::shared_ptr<ConsoleView>();
 
 	return findIt->second;
 }
@@ -1797,9 +1797,9 @@ bool MainFrame::CreateNewConsole(DWORD dwTabIndex, const wstring& strStartupDir 
 		m_dwColumns	= dwColumns;
 	}
 
-	shared_ptr<TabData> tabData = g_settingsHandler->GetTabSettings().tabDataVector[dwTabIndex];
+	std::shared_ptr<TabData> tabData = g_settingsHandler->GetTabSettings().tabDataVector[dwTabIndex];
 
-	shared_ptr<ConsoleView> consoleView(new ConsoleView(*this, dwTabIndex, strStartupDir, strStartupCmd, strDbgCmdLine, dwRows, dwColumns));
+	std::shared_ptr<ConsoleView> consoleView(new ConsoleView(*this, dwTabIndex, strStartupDir, strStartupCmd, strDbgCmdLine, dwRows, dwColumns));
 	UserCredentials			userCredentials;
 
 	if (tabData->bRunAsUser)
@@ -1908,7 +1908,7 @@ void MainFrame::CloseTab(HWND hwndConsoleView)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void MainFrame::UpdateTabTitle(const shared_ptr<ConsoleView>& consoleView, CString& strTabTitle)
+void MainFrame::UpdateTabTitle(const std::shared_ptr<ConsoleView>& consoleView, CString& strTabTitle)
 {
 	// we always set the tool tip text to the complete, untrimmed title
 	UpdateTabToolTip(*consoleView, strTabTitle);
@@ -2609,7 +2609,7 @@ void MainFrame::CreateAcceleratorTable()
 
 	for (; it != hotKeys.commands.end(); ++it)
 	{
-		shared_ptr<HotKeys::CommandData> c(*it);
+		std::shared_ptr<HotKeys::CommandData> c(*it);
 
 		if ((*it)->accelHotkey.cmd == 0) continue;
 		if ((*it)->accelHotkey.key == 0) continue;

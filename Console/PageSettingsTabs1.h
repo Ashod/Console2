@@ -60,14 +60,14 @@ class PageSettingsTabs1
 
 		void EnableControls();
 
-		void Load(shared_ptr<TabData>& tabData);
+		void Load(std::shared_ptr<TabData>& tabData);
 		void Save();
 
 		const CString& GetTabTitle() const { return m_strTitle; }
 
 	private:
 
-		shared_ptr<TabData>	m_tabData;
+		std::shared_ptr<TabData>	m_tabData;
 
 		CComboBox		m_comboCursor;
 		CStatic			m_staticCursorColor;

@@ -140,7 +140,7 @@ LRESULT DlgSettingsTabs::OnAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 {
 	ConsoleSettings& consoleSettings = g_settingsHandler->GetConsoleSettings();
 
-	shared_ptr<TabData>	tabData(new TabData(consoleSettings.strShell, consoleSettings.strInitialDir));
+	std::shared_ptr<TabData>	tabData(new TabData(consoleSettings.strShell, consoleSettings.strInitialDir));
 
 	m_tabSettings.tabDataVector.push_back(tabData);
 
@@ -263,7 +263,7 @@ LRESULT DlgSettingsTabs::OnTabItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL
 
 void DlgSettingsTabs::MoveListItem(int nItem, int nDirection)
 {
-	shared_ptr<TabData>	tmpData(*(m_tabSettings.tabDataVector.begin() + nItem));
+	std::shared_ptr<TabData>	tmpData(*(m_tabSettings.tabDataVector.begin() + nItem));
 
 	m_listCtrl.DeleteItem(nItem);
 	int nNewItem = m_listCtrl.InsertItem(nItem + nDirection, tmpData->strTitle.c_str());
