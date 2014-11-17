@@ -113,6 +113,9 @@ class MainFrame
 			COMMAND_ID_HANDLER(ID_HELP, OnHelp)
 			COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 			COMMAND_ID_HANDLER(IDC_DUMP_BUFFER, OnDumpBuffer)
+			COMMAND_ID_HANDLER(ID_TOGGLE_ALPHA, OnToggleAlpha)
+			COMMAND_ID_HANDLER(ID_INCREASE_ALPHA, OnIncreaseAlpha)
+			COMMAND_ID_HANDLER(ID_DECREASE_ALPHA, OnDecreaseAlpha)
 			
 			CHAIN_MSG_MAP(CTabbedFrameImpl<MainFrame>)
 			REFLECT_NOTIFICATIONS()
@@ -183,6 +186,9 @@ class MainFrame
 		LRESULT OnHelp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 		LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 		LRESULT OnDumpBuffer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+		LRESULT OnToggleAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+		LRESULT OnIncreaseAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+		LRESULT OnDecreaseAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	public:
 

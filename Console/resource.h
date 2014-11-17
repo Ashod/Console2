@@ -346,6 +346,9 @@
 #define ID_EDIT_CLEAR_SELECTION         32791
 #define ID_EDIT_STOPSCROLLING           32792
 #define ID_EDIT_STOP_SCROLLING          32793
+#define ID_TOGGLE_ALPHA					32795
+#define ID_INCREASE_ALPHA				32796
+#define ID_DECREASE_ALPHA				32797
 
 // Next default values for new objects
 // 
