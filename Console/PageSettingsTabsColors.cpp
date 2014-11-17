@@ -101,7 +101,7 @@ LRESULT PageSettingsTabsColors::OnClickedBtnInheritColors(WORD /*wNotifyCode*/, 
 	return 0;
 }
 
-void PageSettingsTabsColors::Load(shared_ptr<TabData>& tabData)
+void PageSettingsTabsColors::Load(std::shared_ptr<TabData>& tabData)
 {
 	m_tabData = tabData;
 

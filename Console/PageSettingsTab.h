@@ -4,7 +4,7 @@
 interface PageSettingsTab
 {
 public:
-	virtual void Load(shared_ptr<TabData>& tabData) = 0;
+	virtual void Load(std::shared_ptr<TabData>& tabData) = 0;
 	virtual void Save() = 0;
 	void Show(int nCmdShow)
 	{

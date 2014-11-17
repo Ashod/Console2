@@ -381,7 +381,7 @@ void MainFrame::UpdateSystemMenu()
 	// prepare to copy the menu
 	CMenuItemInfo mii;
 	mii.fMask = MIIM_FTYPE | MIIM_ID | MIIM_STRING | MIIM_SUBMENU;
-	shared_ptr<TCHAR> miiString (new TCHAR[64]); // 64 is an arbitrary chosen length
+    std::shared_ptr<TCHAR> miiString(new TCHAR[64]); // 64 is an arbitrary chosen length
 	mii.dwTypeData = miiString.get();
 
 	// copy the menu
@@ -1532,7 +1532,7 @@ LRESULT MainFrame::OnEditSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 		{
 			MutexLock	viewMapLock(m_viewsMutex);
-			for each (pair<HWND, shared_ptr<ConsoleView>> view in m_views)
+            for each (pair<HWND, std::shared_ptr<ConsoleView>> view in m_views)
 			{
 				view.second->UpdateColors();
 			}

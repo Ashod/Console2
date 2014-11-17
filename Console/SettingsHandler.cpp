@@ -1130,7 +1130,7 @@ HotKeys::HotKeys()
 	commands.push_back(std::shared_ptr<CommandData>(new CommandData(L"decreasealpha",	ID_DECREASE_ALPHA,	L"Decrease Alpha")));
 
 	// global commands
-	commands.push_back(shared_ptr<CommandData>(new CommandData(L"activate",	IDC_GLOBAL_ACTIVATE,	L"Activate Console (global)", true)));
+    commands.push_back(std::shared_ptr<CommandData>(new CommandData(L"activate", IDC_GLOBAL_ACTIVATE, L"Activate Console (global)", true)));
 }
 
 //////////////////////////////////////////////////////////////////////////////

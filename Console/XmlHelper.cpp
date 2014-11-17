@@ -86,7 +86,7 @@ HRESULT XmlHelper::GetDomElement(const CComPtr<IXMLDOMElement>& pRootElement, co
 	if (pRootElement.p == NULL) return E_FAIL;
 
 	hr = pRootElement->selectSingleNode(bstrPath, &pNode);
-    return (SUCCEEDED(hr) ? pNode.QueryInterface(&pElement) : hr);
+    return (hr == S_OK ? pNode.QueryInterface(&pElement) : E_FAIL);
 }
 
 /*

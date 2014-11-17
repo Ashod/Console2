@@ -62,7 +62,7 @@ static HRESULT _CreateShellLink(PCWSTR pszArguments, PCWSTR pszTitle, IShellLink
 	return hr;
 }
 
-static void SetIcon(IShellLink *psl, shared_ptr<TabData> tab)
+static void SetIcon(IShellLink *psl, std::shared_ptr<TabData> tab)
 {
 	if (tab->bUseDefaultIcon)
 	{

@@ -37,13 +37,13 @@ class PageSettingsTabsColors
 
 		LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
-		void Load(shared_ptr<TabData>& tabData);
+        void Load(std::shared_ptr<TabData>& tabData);
 		void Save();
 
 	private:
 
 		ConsoleSettings	&m_consoleSettings;
-		shared_ptr<TabData>	m_tabData;
+        std::shared_ptr<TabData>	m_tabData;
 };
 
 //////////////////////////////////////////////////////////////////////////////
