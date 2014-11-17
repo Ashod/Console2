@@ -649,8 +649,7 @@ LRESULT MainFrame::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 {
 	MINMAXINFO* pMinMax = (MINMAXINFO*)lParam;
 
-	CRect					maxClientRect;
-
+	CRect maxClientRect;
 	if (!(m_activeView) || (!m_activeView->GetMaxRect(maxClientRect)))
 	{
 		bHandled = false;
@@ -783,12 +782,15 @@ LRESULT MainFrame::OnWindowPosChanging(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		return 0;
 	}
 
-	if (!(pWinPos->flags & SWP_NOMOVE))
+    if (!(pWinPos->flags & SWP_NOMOVE))
 	{
 		// do nothing for maximized windows
-		if (IsZoomed()) return 0;
+        if (IsZoomed())
+        {
+            return 0;
+        }
 
-		m_dockPosition	= dockNone;
+		m_dockPosition = dockNone;
 		
 		if (positionSettings.nSnapDistance >= 0)
 		{
@@ -805,6 +807,8 @@ LRESULT MainFrame::OnWindowPosChanging(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 			GetWindowRect(&rectWindow);
 			Helpers::GetDesktopRect(pointCursor, rectDesktop);
 			Helpers::GetMonitorRect(m_hWnd, rectMonitor);
+            TRACE(L"DesktopRect: (%d, %d, %d, %d)\n", rectDesktop.left, rectDesktop.top, rectDesktop.right, rectDesktop.bottom);
+            TRACE(L"MonitorRect: (%d, %d, %d, %d)\n", rectMonitor.left, rectMonitor.top, rectMonitor.right, rectMonitor.bottom);
 
 			if (!rectMonitor.PtInRect(pointCursor))
 			{
