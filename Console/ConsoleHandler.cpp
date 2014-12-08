@@ -47,7 +47,7 @@ ConsoleHandler::~ConsoleHandler()
 {
 	StopMonitorThread();
 
-	if ((m_consoleParams.Get() != NULL) && 
+	if ((m_consoleParams.Get() != NULL) &&
 		(m_consoleParams->hwndConsoleWindow))
 	{
 		::SendMessage(m_consoleParams->hwndConsoleWindow, WM_CLOSE, 0, 0);
@@ -77,14 +77,14 @@ void ConsoleHandler::SetupDelegates(ConsoleChangeDelegate consoleChangeDelegate,
 
 bool ConsoleHandler::StartShellProcess
 (
-	const wstring& strCustomShell, 
-	const wstring& strInitialDir, 
+	const wstring& strCustomShell,
+	const wstring& strInitialDir,
 	const wstring& strUser,
 	const wstring& strPassword,
-	const wstring& strInitialCmd, 
-	const wstring& strConsoleTitle, 
-	DWORD dwStartupRows, 
-	DWORD dwStartupColumns, 
+	const wstring& strInitialCmd,
+	const wstring& strConsoleTitle,
+	DWORD dwStartupRows,
+	DWORD dwStartupColumns,
 	bool bDebugFlag
 )
 {
@@ -107,11 +107,11 @@ bool ConsoleHandler::StartShellProcess
 		// logon user
 		HANDLE hUserToken = NULL;
 		::LogonUser(
-			strUsername.c_str(), 
-			strDomain.length() > 0 ? strDomain.c_str() : NULL, 
-			strPassword.c_str(), 
-			LOGON32_LOGON_INTERACTIVE, 
-			LOGON32_PROVIDER_DEFAULT, 
+			strUsername.c_str(),
+			strDomain.length() > 0 ? strDomain.c_str() : NULL,
+			strPassword.c_str(),
+			LOGON32_LOGON_INTERACTIVE,
+			LOGON32_PROVIDER_DEFAULT,
 			&hUserToken);
 
 		userToken.reset(hUserToken, ::CloseHandle);
@@ -132,7 +132,7 @@ bool ConsoleHandler::StartShellProcess
 		::ZeroMemory(&userProfile, sizeof(PROFILEINFO));
 		userProfile.dwSize = sizeof(PROFILEINFO);
 		userProfile.lpUserName = const_cast<wchar_t*>(strUser.c_str());
-		
+
 		::LoadUserProfile(userToken.get(), &userProfile);
 		userProfileKey.reset(userProfile.hProfile, bind<BOOL>(::UnloadUserProfile, userToken.get(), _1));
 */
@@ -145,7 +145,7 @@ bool ConsoleHandler::StartShellProcess
 	}
 
 	wstring	strShellCmdLine(strCustomShell);
-	
+
 	if (strShellCmdLine.length() == 0)
 	{
 		wchar_t	szComspec[MAX_PATH];
@@ -170,7 +170,7 @@ bool ConsoleHandler::StartShellProcess
 		{
 			if (::GetEnvironmentVariable(L"COMSPEC", szComspec, MAX_PATH) > 0)
 			{
-				strShellCmdLine = szComspec;		
+				strShellCmdLine = szComspec;
 			}
 
 			if (strShellCmdLine.length() == 0) strShellCmdLine = L"cmd.exe";
@@ -228,9 +228,9 @@ bool ConsoleHandler::StartShellProcess
 
 	if (g_settingsHandler->GetConsoleSettings().bStartHidden)
 	{
-		// Starting Windows console window hidden causes problems with 
-		// some GUI apps started from Console that use SW_SHOWDEFAULT to 
-		// initially show their main window (i.e. the window inherits our 
+		// Starting Windows console window hidden causes problems with
+		// some GUI apps started from Console that use SW_SHOWDEFAULT to
+		// initially show their main window (i.e. the window inherits our
 		// SW_HIDE flag and remains invisible :-)
 		si.dwFlags		= STARTF_USESHOWWINDOW;
 		si.wShowWindow	= SW_HIDE;
@@ -247,7 +247,7 @@ bool ConsoleHandler::StartShellProcess
 		si.dwX			= 0x7FFF;
 		si.dwY			= 0x7FFF;
 	}
-	
+
 	PROCESS_INFORMATION pi;
 	// we must use CREATE_UNICODE_ENVIRONMENT here, since s_environmentBlock contains Unicode strings
 	DWORD dwStartupFlags = CREATE_NEW_CONSOLE|CREATE_SUSPENDED|CREATE_UNICODE_ENVIRONMENT;
@@ -255,13 +255,13 @@ bool ConsoleHandler::StartShellProcess
 	// TODO: not supported yet
 	//if (bDebugFlag) dwStartupFlags |= DEBUG_PROCESS;
 
-	
+
 	if (strUsername.length() > 0)
 	{
 		if (!::CreateProcessWithLogonW(
-			strUsername.c_str(), 
-			strDomain.length() > 0 ? strDomain.c_str() : NULL, 
-			strPassword.c_str(), 
+			strUsername.c_str(),
+			strDomain.length() > 0 ? strDomain.c_str() : NULL,
+			strPassword.c_str(),
 			LOGON_WITH_PROFILE,
 			NULL,
 //			const_cast<wchar_t*>(Helpers::ExpandEnvironmentStringsForUser(userToken, strShellCmdLine).c_str()),
@@ -311,7 +311,10 @@ bool ConsoleHandler::StartShellProcess
 	m_hConsoleProcess = std::shared_ptr<void>(pi.hProcess, ::CloseHandle);
 
 	// inject our hook DLL into console process
-	if (!InjectHookDLL(pi)) return false;
+	if (!InjectHookDLL(pi))
+	{
+		throw ConsoleException(str(wformat(Helpers::LoadString(IDS_ERR_CANT_START_SHELL)) % strShellCmdLine));
+	}
 
 	// resume the console process
 	::ResumeThread(pi.hThread);
@@ -336,10 +339,10 @@ DWORD ConsoleHandler::StartMonitorThread()
 	m_hMonitorThread = std::shared_ptr<void>(
 		::CreateThread(
 		NULL,
-		0, 
-		MonitorThreadStatic, 
-		reinterpret_cast<void*>(this), 
-		0, 
+		0,
+		MonitorThreadStatic,
+		reinterpret_cast<void*>(this),
+		0,
 		&dwThreadId),
 		::CloseHandle);
 
@@ -398,7 +401,7 @@ void ConsoleHandler::StopScrolling()
 
 void ConsoleHandler::ResumeScrolling()
 {
-	// emulate ESC keypress to end 'mark' command (we send a mark command just in case 
+	// emulate ESC keypress to end 'mark' command (we send a mark command just in case
 	// a user has already pressed ESC as I don't know an easy way to detect if the mark
 	// command is active or not)
 	::SendMessage(m_consoleParams->hwndConsoleWindow, WM_SYSCOMMAND, SC_CONSOLE_MARK, 0);
@@ -489,10 +492,10 @@ void ConsoleHandler::CreateWatchdog()
 		if (::InitializeSecurityDescriptor(sd.get(), SECURITY_DESCRIPTOR_REVISION))
 		{
 			::SetSecurityDescriptorDacl(
-				sd.get(), 
-				TRUE,		// bDaclPresent flag   
+				sd.get(),
+				TRUE,		// bDaclPresent flag
 				NULL,		// full access to everyone
-				FALSE);		// not a default DACL 
+				FALSE);		// not a default DACL
 		}
 
 		SECURITY_ATTRIBUTES	sa;
@@ -520,7 +523,7 @@ bool ConsoleHandler::InjectHookDLL(PROCESS_INFORMATION& pi)
 	if (::GetFileAttributes(strHookDllPath.c_str()) == INVALID_FILE_ATTRIBUTES) return false;
 
 	CONTEXT		context;
-	
+
 	void*		mem				= NULL;
 	size_t		memLen			= 0;
 	UINT_PTR	fnLoadLibrary	= NULL;
@@ -578,7 +581,7 @@ bool ConsoleHandler::InjectHookDLL(PROCESS_INFORMATION& pi)
 		siWow.cb			= sizeof(STARTUPINFO);
 		siWow.dwFlags		= STARTF_USESHOWWINDOW;
 		siWow.wShowWindow	= SW_HIDE;
-		
+
 		PROCESS_INFORMATION piWow;
 
 		if (!::CreateProcess(
@@ -687,7 +690,7 @@ bool ConsoleHandler::InjectHookDLL(PROCESS_INFORMATION& pi)
 		*ip.pB++ = 0xFF;					// call  LoadLibraryW
 		*ip.pB++ = 0x15;
 		*ip.pI++ = -49;
-		
+
 		*ip.pB++ = 0x48;					// add   rsp, 40
 		*ip.pB++ = 0x83;
 		*ip.pB++ = 0xC4;
@@ -786,7 +789,7 @@ DWORD ConsoleHandler::MonitorThread()
 			m_consoleParams->dwRows		= dwRows;
 
 			// TODO: improve this
-			// this will handle console applications that change console buffer 
+			// this will handle console applications that change console buffer
 			// size (like Far manager).
 			// This is not a perfect solution, but it's the best one I have
 			// for now
