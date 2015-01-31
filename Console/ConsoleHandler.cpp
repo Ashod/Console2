@@ -379,7 +379,7 @@ void ConsoleHandler::SendMouseEvent(const COORD& mousePos, DWORD dwMouseButtonSt
 		m_consoleMouseEvent.SetReqEvent();
 	}
 
-	::WaitForSingleObject(m_consoleMouseEvent.GetRespEvent(), INFINITE);
+	::WaitForSingleObject(m_consoleMouseEvent.GetRespEvent(), INFINITE); //TODO: Break and kill with timeout
 }
 
 //////////////////////////////////////////////////////////////////////////////
