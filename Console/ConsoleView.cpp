@@ -338,6 +338,13 @@ LRESULT ConsoleView::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 		return m_mainFrame.SendMessage(WM_SYSCOMMAND, SC_KEYMENU, VK_SPACE);
 	}
 
+    // F11 or ALT+ENTER for Full-Screen toggle.
+    if (wParam == VK_F11 ||
+        (wParam == VK_RETURN && (lParam & (0x1 << 29))))
+    {
+        return m_mainFrame.SendMessage(WM_SYSKEYDOWN, wParam, lParam);
+    }
+
 	return OnConsoleFwdMsg(uMsg, wParam, lParam, bHandled);
 }
 

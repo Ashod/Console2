@@ -97,6 +97,7 @@ MainFrame::MainFrame
 , m_bToolbarVisible(TRUE)
 , m_bStatusBarVisible(TRUE)
 , m_bTabsVisible(TRUE)
+, m_bFullScreen(FALSE)
 , m_dockPosition(dockNone)
 , m_zOrder(zorderNormal)
 , m_mousedragOffset(0, 0)
@@ -595,15 +596,41 @@ LRESULT MainFrame::OnHotKey(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOO
 
 LRESULT MainFrame::OnSysKeydown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-/*
-	if ((wParam == VK_SPACE) && (lParam & (0x1 << 29)))
-	{
-		// send the SC_KEYMENU directly to the main frame, because DefWindowProc does not handle the message correctly
-		return SendMessage(WM_SYSCOMMAND, SC_KEYMENU, VK_SPACE);
-	}
-*/
+    bHandled = FALSE;
 
-	bHandled = FALSE;
+    // F11 or ALT+ENTER for Full-Screen toggle.
+    if (wParam == VK_F11 ||
+        (wParam == VK_RETURN && (lParam & (0x1 << 29))))
+    {
+        m_bFullScreen = !m_bFullScreen;
+        if (m_bFullScreen)
+        {
+            m_dwWindowStyles = ::GetWindowLong(m_hWnd, GWL_STYLE);
+            DWORD dwRemove = WS_TILEDWINDOW;
+            DWORD dwNewStyle = m_dwWindowStyles & ~dwRemove;
+            ::SetWindowLong(m_hWnd, GWL_STYLE, dwNewStyle);
+
+            GetWindowRect(&m_rectRestoredWnd);
+
+            HMONITOR hMon = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO info;
+            info.cbSize = sizeof(MONITORINFO);
+            GetMonitorInfo(hMon, &info);
+            int width = info.rcMonitor.right - info.rcMonitor.left;
+            int height = info.rcMonitor.bottom - info.rcMonitor.top;
+            TRACE(L"Mon Info: %d, %d, %d, %d\n", info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom);
+            ::SetWindowPos(m_hWnd, NULL, info.rcMonitor.left, info.rcMonitor.top, width, height, SWP_FRAMECHANGED);
+        }
+        else
+        {
+            m_bRestoringWindow = TRUE;
+            ::SetWindowPos(m_hWnd, NULL, m_rectRestoredWnd.left, m_rectRestoredWnd.top, m_rectRestoredWnd.Width(), m_rectRestoredWnd.Height(), SWP_FRAMECHANGED);
+            ::SetWindowLong(m_hWnd, GWL_STYLE, m_dwWindowStyles);
+        }
+
+        bHandled = TRUE;
+    }
+
 	return 0;
 }
 
