@@ -255,7 +255,7 @@ class MainFrame
 		BOOL			m_bToolbarVisible;
 		BOOL			m_bStatusBarVisible;
 		BOOL			m_bTabsVisible;
-        BOOL            m_bFullScreen;
+        bool            m_bFullScreen;
         DWORD           m_dwWindowStyles;
 
 		DockPosition	m_dockPosition;

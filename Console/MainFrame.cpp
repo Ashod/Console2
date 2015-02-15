@@ -603,6 +603,11 @@ LRESULT MainFrame::OnSysKeydown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
         (wParam == VK_RETURN && (lParam & (0x1 << 29))))
     {
         m_bFullScreen = !m_bFullScreen;
+        if (m_activeView)
+        {
+            m_activeView->SetFullScreen(m_bFullScreen);
+        }
+
         if (m_bFullScreen)
         {
             m_dwWindowStyles = ::GetWindowLong(m_hWnd, GWL_STYLE);
@@ -619,13 +624,14 @@ LRESULT MainFrame::OnSysKeydown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
             int width = info.rcMonitor.right - info.rcMonitor.left;
             int height = info.rcMonitor.bottom - info.rcMonitor.top;
             TRACE(L"Mon Info: %d, %d, %d, %d\n", info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom);
-            ::SetWindowPos(m_hWnd, NULL, info.rcMonitor.left, info.rcMonitor.top, width, height, SWP_FRAMECHANGED);
+            SetWindowPos(HWND_TOP, info.rcMonitor.left, info.rcMonitor.top, width, height, SWP_FRAMECHANGED);
+            //::SetForegroundWindow(m_hWnd);
         }
         else
         {
             m_bRestoringWindow = TRUE;
-            ::SetWindowPos(m_hWnd, NULL, m_rectRestoredWnd.left, m_rectRestoredWnd.top, m_rectRestoredWnd.Width(), m_rectRestoredWnd.Height(), SWP_FRAMECHANGED);
             ::SetWindowLong(m_hWnd, GWL_STYLE, m_dwWindowStyles);
+            SetWindowPos(NULL, m_rectRestoredWnd.left, m_rectRestoredWnd.top, m_rectRestoredWnd.Width(), m_rectRestoredWnd.Height(), SWP_FRAMECHANGED);
         }
 
         bHandled = TRUE;
@@ -683,11 +689,7 @@ LRESULT MainFrame::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		return 1;
 	}
 
-	TRACE(L"minmax: %ix%i\n", maxClientRect.Width(), maxClientRect.Height());
-
 	AdjustWindowRect(maxClientRect);
-
-	TRACE(L"minmax: %ix%i\n", maxClientRect.Width(), maxClientRect.Height());
 
 	pMinMax->ptMaxSize.x = maxClientRect.Width();
 	pMinMax->ptMaxSize.y = maxClientRect.Height() + 4;
@@ -695,7 +697,8 @@ LRESULT MainFrame::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	pMinMax->ptMaxTrackSize.x = pMinMax->ptMaxSize.x;
 	pMinMax->ptMaxTrackSize.y = pMinMax->ptMaxSize.y;
 
-	return 0;
+    TRACE(L"%i x %i\n", pMinMax->ptMaxSize.x, pMinMax->ptMaxSize.y);
+    return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -781,7 +784,7 @@ LRESULT MainFrame::OnSizing(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /
 		rectNew->right += (rectWindow.right - rectNew->right) - (rectWindow.right - rectNew->right) / pointSize.x * pointSize.x;
 
 
-    TRACE(L"%d x %d\n", rectWindow.Width(), rectWindow.Height());
+    //TRACE(L"%d x %d\n", rectWindow.Width(), rectWindow.Height());
     return 0;
 }
 
@@ -792,8 +795,10 @@ LRESULT MainFrame::OnSizing(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /
 
 LRESULT MainFrame::OnWindowPosChanging(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled)
 {
-	WINDOWPOS*			pWinPos			= reinterpret_cast<WINDOWPOS*>(lParam);
-	PositionSettings&	positionSettings= g_settingsHandler->GetAppearanceSettings().positionSettings;
+	WINDOWPOS* pWinPos = reinterpret_cast<WINDOWPOS*>(lParam);
+    //TRACE(L"%d x %d\n", pWinPos->cx, pWinPos->cy);
+
+    PositionSettings& positionSettings = g_settingsHandler->GetAppearanceSettings().positionSettings;
 
 	if (positionSettings.zOrder == zorderOnBottom) pWinPos->hwndInsertAfter = HWND_BOTTOM;
 
@@ -1228,7 +1233,9 @@ LRESULT MainFrame::OnTabChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 		{
 			UISetCheck(ID_VIEW_CONSOLE, it->second->GetConsoleWindowVisible() ? TRUE : FALSE);
 			m_activeView = it->second;
-			it->second->SetActive(true);
+            assert(m_activeView);
+            m_activeView->SetFullScreen(m_bFullScreen);
+            m_activeView->SetActive(true);
 
 			if (appearanceSettings.windowSettings.bUseTabIcon) SetWindowIcons();
 
@@ -2438,7 +2445,7 @@ void MainFrame::ResizeWindow()
 	CRect rectWindow;
 	GetWindowRect(&rectWindow);
 	DWORD dwWindowWidth	= rectWindow.Width();
-	DWORD dwWindowHeight= rectWindow.Height();
+	DWORD dwWindowHeight = rectWindow.Height();
 
     TRACE(L"%i x %i -> %i x %i\n",
           m_dwWindowWidth, m_dwWindowHeight,
@@ -2457,6 +2464,8 @@ void MainFrame::ResizeWindow()
     {
         m_activeView->SetResizing(false);
     }
+
+    TRACE(L"===\n");
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2475,6 +2484,7 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 		if (bMaxOrRestore)
 		{
 			GetClientRect(&clientRect);
+            //TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
 
 			// adjust for the toolbar height
 			CReBarCtrl	rebar(m_hWndToolBar);
@@ -2496,6 +2506,7 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 
 		// if we're being maximized, AdjustRectAndResize will use client rect supplied
 		m_activeView->AdjustRectAndResize(clientRect, m_dwResizeWindowEdge, !bMaxOrRestore);
+        //TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
 
 		// for other views, first set view size and then resize their Windows consoles
 		MutexLock	viewMapLock(m_viewsMutex);
@@ -2504,7 +2515,7 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 		{
 			if (it->second->m_hWnd == m_activeView->m_hWnd) continue;
 
-			it->second->SetWindowPos(
+            it->second->SetWindowPos(
 							0,
 							0,
 							0,
@@ -2514,7 +2525,8 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 
 			// if we're being maximized, AdjustRectAndResize will use client rect supplied
 			it->second->AdjustRectAndResize(clientRect, m_dwResizeWindowEdge, !bMaxOrRestore);
-		}
+            //TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
+        }
 	}
 	else
 	{
@@ -2528,8 +2540,7 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 	}
 
 	AdjustWindowRect(clientRect);
-
-//	TRACE(L"AdjustWindowSize: %ix%i\n", clientRect.Width(), clientRect.Height());
+    TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
 
 	SetWindowPos(
 		0,

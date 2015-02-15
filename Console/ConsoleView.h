@@ -98,10 +98,11 @@ class ConsoleView
 
 	public:
 
-		void GetRect(CRect& clientRect);
-		bool GetMaxRect(CRect& maxClientRect);
+		void GetRect(CRect& rcWindow);
+		bool GetMaxRect(CRect& rcMaxWindow);
 		void AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdge, bool bGetClientRect);
 		CPoint GetCellSize() { return CPoint(m_nCharWidth, m_nCharHeight); };
+        void SetFullScreen(bool fullScreen) { m_bFullScreen = fullScreen; }
 
 		ConsoleHandler& GetConsoleHandler() { return m_consoleHandler; }
 		void UpdateColors();
@@ -184,6 +185,7 @@ class ConsoleView
 		bool	m_bNeedFullRepaint;
 		bool	m_bUseTextAlphaBlend;
 		bool	m_bConsoleWindowVisible;
+        bool    m_bFullScreen;
 
 		DWORD	m_dwStartupRows;
 		DWORD	m_dwStartupColumns;

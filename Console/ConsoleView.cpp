@@ -40,6 +40,7 @@ ConsoleView::ConsoleView(MainFrame& mainFrame, DWORD dwTabIndex, const wstring& 
 , m_bNeedFullRepaint(false) // first OnPaint will do a full repaint
 , m_bUseTextAlphaBlend(false)
 , m_bConsoleWindowVisible(false)
+, m_bFullScreen(false)
 , m_dwStartupRows(dwRows)
 , m_dwStartupColumns(dwColumns)
 , m_bShowVScroll(false)
@@ -980,19 +981,26 @@ LRESULT ConsoleView::OnScrollCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 
 //////////////////////////////////////////////////////////////////////////////
 
-void ConsoleView::GetRect(CRect& clientRect)
+void ConsoleView::GetRect(CRect& rcWindow)
 {
-	StylesSettings& stylesSettings = g_settingsHandler->GetAppearanceSettings().stylesSettings;
+    if (m_bFullScreen)
+    {
+        GetWindowRect(&rcWindow);
+    }
+    else
+    {
+        StylesSettings& stylesSettings = g_settingsHandler->GetAppearanceSettings().stylesSettings;
 
-	clientRect.left		= 0;
-	clientRect.top		= 0;
-	clientRect.right	= m_consoleHandler.GetConsoleParams()->dwColumns*m_nCharWidth + 2*stylesSettings.dwInsideBorder;
-	clientRect.bottom	= m_consoleHandler.GetConsoleParams()->dwRows*m_nCharHeight + 2*stylesSettings.dwInsideBorder;
+        rcWindow.left = 0;
+        rcWindow.top = 0;
+        rcWindow.right = m_consoleHandler.GetConsoleParams()->dwColumns*m_nCharWidth + 2 * stylesSettings.dwInsideBorder;
+        rcWindow.bottom = m_consoleHandler.GetConsoleParams()->dwRows*m_nCharHeight + 2 * stylesSettings.dwInsideBorder;
 
-	if (m_bShowVScroll) clientRect.right	+= m_nVScrollWidth;
-	if (m_bShowHScroll) clientRect.bottom	+= m_nHScrollWidth;
+        if (m_bShowVScroll) rcWindow.right += m_nVScrollWidth;
+        if (m_bShowHScroll) rcWindow.bottom += m_nHScrollWidth;
+    }
 
-    TRACE(L"%d x %d\n", clientRect.Width(), clientRect.Height());
+    TRACE(L"%d x %d\n", rcWindow.Width(), rcWindow.Height());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1000,17 +1008,17 @@ void ConsoleView::GetRect(CRect& clientRect)
 
 //////////////////////////////////////////////////////////////////////////////
 
-bool ConsoleView::GetMaxRect(CRect& maxClientRect)
+bool ConsoleView::GetMaxRect(CRect& rcMaxWindow)
 {
 	if (m_bInitializing) return false;
 
 	StylesSettings& stylesSettings = g_settingsHandler->GetAppearanceSettings().stylesSettings;
 
 	// TODO: take care of max window size
-	maxClientRect.left	= 0;
-	maxClientRect.top	= 0;
-	maxClientRect.right	= m_consoleHandler.GetConsoleParams()->dwMaxColumns*m_nCharWidth + 2*stylesSettings.dwInsideBorder;
-	maxClientRect.bottom= m_consoleHandler.GetConsoleParams()->dwMaxRows*m_nCharHeight + 2*stylesSettings.dwInsideBorder;
+	rcMaxWindow.left	= 0;
+	rcMaxWindow.top	= 0;
+	rcMaxWindow.right	= m_consoleHandler.GetConsoleParams()->dwMaxColumns*m_nCharWidth + 2*stylesSettings.dwInsideBorder;
+	rcMaxWindow.bottom= m_consoleHandler.GetConsoleParams()->dwMaxRows*m_nCharHeight + 2*stylesSettings.dwInsideBorder;
 
 	// TODO: this calculation does not work very well for multiple monitors
     // The desktop is really the virtual desktop with all monitors.
@@ -1019,30 +1027,36 @@ bool ConsoleView::GetMaxRect(CRect& maxClientRect)
     rectDesktop.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
     rectDesktop.right = rectDesktop.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
     rectDesktop.bottom = rectDesktop.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    if (m_bFullScreen)
+    {
+        rcMaxWindow = rectDesktop;
+    }
+    else
+    {
+        bool bRecalc = false;
+        if (rectDesktop.Width() < rcMaxWindow.Width())
+        {
+            m_consoleHandler.GetConsoleParams()->dwMaxColumns = (rectDesktop.Width() - 2 * stylesSettings.dwInsideBorder) / m_nCharWidth;
+            bRecalc = true;
+        }
 
-	bool bRecalc = false;
-	if (rectDesktop.Width() < maxClientRect.Width())
-	{
-		m_consoleHandler.GetConsoleParams()->dwMaxColumns = (rectDesktop.Width() - 2*stylesSettings.dwInsideBorder) / m_nCharWidth;
-		bRecalc = true;
-	}
+        if (rectDesktop.Height() < rcMaxWindow.Height())
+        {
+            m_consoleHandler.GetConsoleParams()->dwMaxRows = (rectDesktop.Height() - 2 * stylesSettings.dwInsideBorder) / m_nCharHeight;
+            bRecalc = true;
+        }
 
-	if (rectDesktop.Height() < maxClientRect.Height())
-	{
-		m_consoleHandler.GetConsoleParams()->dwMaxRows = (rectDesktop.Height() - 2*stylesSettings.dwInsideBorder) / m_nCharHeight;
-		bRecalc = true;
-	}
+        if (bRecalc)
+        {
+            rcMaxWindow.right = m_consoleHandler.GetConsoleParams()->dwMaxColumns*m_nCharWidth + 2 * stylesSettings.dwInsideBorder;
+            rcMaxWindow.bottom = m_consoleHandler.GetConsoleParams()->dwMaxRows*m_nCharHeight + 2 * stylesSettings.dwInsideBorder;
+        }
 
-	if (bRecalc)
-	{
-		maxClientRect.right	= m_consoleHandler.GetConsoleParams()->dwMaxColumns*m_nCharWidth + 2*stylesSettings.dwInsideBorder;
-		maxClientRect.bottom= m_consoleHandler.GetConsoleParams()->dwMaxRows*m_nCharHeight + 2*stylesSettings.dwInsideBorder;
-	}
+        if (m_bShowVScroll) rcMaxWindow.right += m_nVScrollWidth;
+        if (m_bShowHScroll) rcMaxWindow.bottom += m_nHScrollWidth;
+    }
 
-	if (m_bShowVScroll) maxClientRect.right	+= m_nVScrollWidth;
-	if (m_bShowHScroll) maxClientRect.bottom+= m_nHScrollWidth;
-
-    TRACE(L"%d x %d\n", maxClientRect.Width(), maxClientRect.Height());
+    TRACE(L"%d x %d\n", rcMaxWindow.Width(), rcMaxWindow.Height());
     return true;
 }
 
@@ -1067,9 +1081,14 @@ void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdg
 	// TODO: handle variable fonts
 	DWORD dwColumns	= (clientRect.Width() - 2*stylesSettings.dwInsideBorder) / m_nCharWidth;
 	DWORD dwRows	= (clientRect.Height() - 2*stylesSettings.dwInsideBorder) / m_nCharHeight;
+	TRACE(L"0x%08X, Adjusted: %i x %i\n", m_hWnd, dwRows, dwColumns);
+	//TRACE(L"================================================================\n");
 
-	clientRect.right	= clientRect.left + dwColumns*m_nCharWidth + 2*stylesSettings.dwInsideBorder;
-	clientRect.bottom	= clientRect.top + dwRows*m_nCharHeight + 2*stylesSettings.dwInsideBorder;
+    if (!m_bFullScreen)
+    {
+        clientRect.right = clientRect.left + dwColumns*m_nCharWidth + 2 * stylesSettings.dwInsideBorder;
+        clientRect.bottom = clientRect.top + dwRows*m_nCharHeight + 2 * stylesSettings.dwInsideBorder;
+    }
 
 	// adjust for scrollbars
 	if (m_bShowVScroll) clientRect.right	+= m_nVScrollWidth;
@@ -1081,9 +1100,6 @@ void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdg
 	newConsoleSize->dwColumns			= dwColumns;
 	newConsoleSize->dwRows				= dwRows;
 	newConsoleSize->dwResizeWindowEdge	= dwResizeWindowEdge;
-
-	TRACE(L"0x%08X, adjusted: %i x %i\n", m_hWnd, dwRows, dwColumns);
-	//TRACE(L"================================================================\n");
 
 	m_consoleHandler.GetNewConsoleSize().SetReqEvent();
 }
