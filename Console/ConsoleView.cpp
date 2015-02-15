@@ -316,12 +316,19 @@ LRESULT ConsoleView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 LRESULT ConsoleView::OnWindowPosChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
 	WINDOWPOS* pWinPos = reinterpret_cast<WINDOWPOS*>(lParam);
+    TRACE(L"%d x %d\n", pWinPos->cx, pWinPos->cy);
 
 	// showing the view, repaint
-	if (pWinPos->flags & SWP_SHOWWINDOW) Repaint(false);
+    if (pWinPos->flags & SWP_SHOWWINDOW)
+    {
+        Repaint(false);
+    }
 
 	// force full repaint for relative backgrounds
-	if (m_tabData->imageData.bRelative && !(pWinPos->flags & SWP_NOMOVE)) m_bNeedFullRepaint = true;
+    if (m_tabData->imageData.bRelative && !(pWinPos->flags & SWP_NOMOVE))
+    {
+        m_bNeedFullRepaint = true;
+    }
 
 	return 0;
 }
@@ -984,6 +991,8 @@ void ConsoleView::GetRect(CRect& clientRect)
 
 	if (m_bShowVScroll) clientRect.right	+= m_nVScrollWidth;
 	if (m_bShowHScroll) clientRect.bottom	+= m_nHScrollWidth;
+
+    TRACE(L"%d x %d\n", clientRect.Width(), clientRect.Height());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1033,7 +1042,8 @@ bool ConsoleView::GetMaxRect(CRect& maxClientRect)
 	if (m_bShowVScroll) maxClientRect.right	+= m_nVScrollWidth;
 	if (m_bShowHScroll) maxClientRect.bottom+= m_nHScrollWidth;
 
-	return true;
+    TRACE(L"%d x %d\n", maxClientRect.Width(), maxClientRect.Height());
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1046,10 +1056,9 @@ void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdg
 	StylesSettings& stylesSettings = g_settingsHandler->GetAppearanceSettings().stylesSettings;
 
 	if (bGetClientRect) GetWindowRect(&clientRect);
-/*
-	TRACE(L"================================================================\n");
-	TRACE(L"rect: %ix%i - %ix%i\n", clientRect.left, clientRect.top, clientRect.right, clientRect.bottom);
-*/
+
+	//TRACE(L"================================================================\n");
+	TRACE(L"rect: %i x %i - %i x %i\n", clientRect.left, clientRect.top, clientRect.right, clientRect.bottom);
 
 	// exclude scrollbars from row/col calculation
 	if (m_bShowVScroll) clientRect.right	-= m_nVScrollWidth;
@@ -1073,10 +1082,8 @@ void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdg
 	newConsoleSize->dwRows				= dwRows;
 	newConsoleSize->dwResizeWindowEdge	= dwResizeWindowEdge;
 
-/*
-	TRACE(L"console view: 0x%08X, adjusted: %ix%i\n", m_hWnd, dwRows, dwColumns);
-	TRACE(L"================================================================\n");
-*/
+	TRACE(L"0x%08X, adjusted: %i x %i\n", m_hWnd, dwRows, dwColumns);
+	//TRACE(L"================================================================\n");
 
 	m_consoleHandler.GetNewConsoleSize().SetReqEvent();
 }
@@ -1137,7 +1144,10 @@ void ConsoleView::Repaint(bool bFullRepaint)
 	if (!m_bNeedFullRepaint)
 	{
 		// not a forced full text repaint, check text difference
-		if (!bFullRepaint) bFullRepaint = (GetBufferDifference() > 15);
+        if (!bFullRepaint)
+        {
+            bFullRepaint = (GetBufferDifference() > 15);
+        }
 
 		// repaint text layer
  		if (bFullRepaint)
@@ -1161,7 +1171,10 @@ void ConsoleView::Repaint(bool bFullRepaint)
 void ConsoleView::MainframeMoving()
 {
 	// next OnPaint will do a full repaint
-	if (m_tabData->imageData.bRelative) m_bNeedFullRepaint = true;
+    if (m_tabData->imageData.bRelative)
+    {
+        m_bNeedFullRepaint = true;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////

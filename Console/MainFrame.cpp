@@ -677,7 +677,7 @@ LRESULT MainFrame::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	MINMAXINFO* pMinMax = (MINMAXINFO*)lParam;
 
 	CRect maxClientRect;
-	if (!(m_activeView) || (!m_activeView->GetMaxRect(maxClientRect)))
+	if (!m_activeView || !m_activeView->GetMaxRect(maxClientRect))
 	{
 		bHandled = false;
 		return 1;
@@ -742,8 +742,7 @@ LRESULT MainFrame::OnSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHa
 // 	CRect rectWindow;
 // 	GetWindowRect(&rectWindow);
 //
-// 	TRACE(L"OnSize dims: %ix%i\n", rectWindow.Width(), rectWindow.Height());
-
+ 	//TRACE(L"%i x %i\n", rectWindow.Width(), rectWindow.Height());
 
 	bHandled = FALSE;
 	return 0;
@@ -781,7 +780,9 @@ LRESULT MainFrame::OnSizing(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /
 	if (rectWindow.right != rectNew->right)
 		rectNew->right += (rectWindow.right - rectNew->right) - (rectWindow.right - rectNew->right) / pointSize.x * pointSize.x;
 
-	return 0;
+
+    TRACE(L"%d x %d\n", rectWindow.Width(), rectWindow.Height());
+    return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1009,6 +1010,8 @@ LRESULT MainFrame::OnConsoleResized(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 {
 	// update rows/columns
 	SharedMemory<ConsoleParams>& consoleParams = m_activeView->GetConsoleHandler().GetConsoleParams();
+
+    TRACE(L"%d x %d -> %d x %d\n", m_dwRows, m_dwColumns, consoleParams->dwRows, consoleParams->dwColumns);
 	m_dwRows	= consoleParams->dwRows;
 	m_dwColumns	= consoleParams->dwColumns;
 
@@ -1778,16 +1781,15 @@ void MainFrame::AdjustWindowRect(CRect& rect)
 
 	if (m_bStatusBarVisible)
 	{
-		CRect	rectStatusBar(0, 0, 0, 0);
+		CRect rectStatusBar(0, 0, 0, 0);
 
 		::GetWindowRect(m_hWndStatusBar, &rectStatusBar);
 		rect.bottom	+= rectStatusBar.Height();
 	}
 
-	rect.bottom	+= GetTabAreaHeight(); //+0
-//	rect.right	+= 0;
+	rect.bottom	+= GetTabAreaHeight();
 
-//	TRACE(L"AdjustWindowRect: %ix%i\n", rect.Width(), rect.Height());
+	TRACE(L"%i x %i\n", rect.Width(), rect.Height());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2435,16 +2437,12 @@ void MainFrame::ResizeWindow()
 {
 	CRect rectWindow;
 	GetWindowRect(&rectWindow);
-
-	CRect rectClient;
-	GetClientRect(&rectClient);
-
 	DWORD dwWindowWidth	= rectWindow.Width();
 	DWORD dwWindowHeight= rectWindow.Height();
 
-	TRACE(L"old dims: %ix%i\n", m_dwWindowWidth, m_dwWindowHeight);
-	TRACE(L"new dims: %ix%i\n", dwWindowWidth, dwWindowHeight);
-	TRACE(L"client dims: %ix%i\n", rectClient.Width(), rectClient.Height());
+    TRACE(L"%i x %i -> %i x %i\n",
+          m_dwWindowWidth, m_dwWindowHeight,
+          dwWindowWidth, dwWindowHeight);
 
 	if ((dwWindowWidth != m_dwWindowWidth) ||
 		(dwWindowHeight != m_dwWindowHeight))
@@ -2455,7 +2453,10 @@ void MainFrame::ResizeWindow()
 	SendMessage(WM_NULL, 0, 0);
 	m_dwResizeWindowEdge = WMSZ_BOTTOM;
 
-	if (m_activeView.get() != NULL) m_activeView->SetResizing(false);
+    if (m_activeView.get() != NULL)
+    {
+        m_activeView->SetResizing(false);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2465,6 +2466,8 @@ void MainFrame::ResizeWindow()
 
 void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= false*/)
 {
+    TRACE(L"ResizeConsole: %d, MaxOrRestore: %d\n", bResizeConsole, bMaxOrRestore);
+
 	CRect clientRect(0, 0, 0, 0);
 
 	if (bResizeConsole)
@@ -2480,10 +2483,9 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 
 			if (m_bStatusBarVisible)
 			{
-				CRect	rectStatusBar(0, 0, 0, 0);
-
+				CRect rectStatusBar(0, 0, 0, 0);
 				::GetWindowRect(m_hWndStatusBar, &rectStatusBar);
-				clientRect.bottom	-= rectStatusBar.Height();
+				clientRect.bottom -= rectStatusBar.Height();
 			}
 
 			clientRect.top += GetTabAreaHeight(); //+0
@@ -2541,7 +2543,7 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 	CRect rectWindow;
 
 	GetWindowRect(&rectWindow);
-//	TRACE(L"AdjustWindowSize 2: %ix%i\n", rectWindow.Width(), rectWindow.Height());
+	TRACE(L"WindowRect: %i x %i\n", rectWindow.Width(), rectWindow.Height());
 	m_dwWindowWidth	= rectWindow.Width();
 	m_dwWindowHeight= rectWindow.Height();
 

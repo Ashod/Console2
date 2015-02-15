@@ -96,7 +96,6 @@ class ConsoleView
 
 		LRESULT OnScrollCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 
-
 	public:
 
 		void GetRect(CRect& clientRect);
@@ -170,7 +169,6 @@ class ConsoleView
 
 		COORD GetConsoleCoord(const CPoint& clientPoint);
 
-
 	private:
 
 		MainFrame& m_mainFrame;
@@ -200,7 +198,6 @@ class ConsoleView
 
 		CIcon	bigIcon;
 		CIcon	smallIcon;
-
 
 		ConsoleHandler					m_consoleHandler;
 
