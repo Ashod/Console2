@@ -209,7 +209,7 @@ LRESULT MainFrame::CreateInitialTabs
 				{
 					// found it, create
 					if (CreateNewConsole(
-						static_cast<DWORD>(i), 
+						static_cast<DWORD>(i),
 						startupDirs[tabIndex],
 						startupCmds[tabIndex],
 						(i == 0) ? m_strDbgCmdLine : wstring(L"")))
@@ -230,7 +230,7 @@ LRESULT MainFrame::CreateInitialTabs
 		if (!cmd.length()) cmd = _T("cmd.exe");
 		bAtLeastOneStarted = CreateNewConsole(0, _T(""), _T(""), cmd);
 	}
-	
+
 	return bAtLeastOneStarted ? 0 : -1;
 }
 
@@ -256,7 +256,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	tbi.dwMask	= TBIF_STYLE;
 	tbi.cbSize	= sizeof(TBBUTTONINFO);
-	
+
 	m_toolbar.GetButtonInfo(ID_FILE_NEW_TAB, &tbi);
 
 	tbi.fsStyle |= TBSTYLE_DROPDOWN;
@@ -275,7 +275,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	DWORD dwTabStyles = CTCS_TOOLTIPS | CTCS_DRAGREARRANGE | CTCS_SCROLL | CTCS_CLOSEBUTTON | CTCS_BOLDSELECTEDTAB;
 	if (controlsSettings.bTabsOnBottom) dwTabStyles |= CTCS_BOTTOM;
-	
+
 	CreateTabWindow(m_hWnd, rcDefault, dwTabStyles);
 
 	if (LRESULT created = CreateInitialTabs(m_startupTabs, m_startupCmds, m_startupDirs, m_nMultiStartSleep, m_bSafe))
@@ -305,7 +305,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	DWORD dwFlags	= SWP_NOSIZE|SWP_NOZORDER;
 
-	if ((!positionSettings.bSavePosition) && 
+	if ((!positionSettings.bSavePosition) &&
 		(positionSettings.nX == -1) || (positionSettings.nY == -1))
 	{
 		// do not reposition the window
@@ -313,7 +313,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}
 	else
 	{
-		// check we're not out of desktop bounds 
+		// check we're not out of desktop bounds
 		int	nDesktopLeft	= ::GetSystemMetrics(SM_XVIRTUALSCREEN);
 		int	nDesktopTop		= ::GetSystemMetrics(SM_YVIRTUALSCREEN);
 
@@ -360,7 +360,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	UpdateSystemMenu();
 
-	// this is the only way I know that other message handlers can be aware 
+	// this is the only way I know that other message handlers can be aware
 	// if they're being called after OnCreate has finished
 	m_bOnCreateDone = true;
 	return 0;
@@ -476,7 +476,7 @@ LRESULT MainFrame::OnActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 
 	TransparencySettings& transparencySettings = g_settingsHandler->GetAppearanceSettings().transparencySettings;
 
-	if ((transparencySettings.transType == transAlpha) && 
+	if ((transparencySettings.transType == transAlpha) &&
 		((transparencySettings.byActiveAlpha != 255) || (transparencySettings.byInactiveAlpha != 255)))
 	{
 		if (bActivating)
@@ -487,7 +487,7 @@ LRESULT MainFrame::OnActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 		{
 			::SetLayeredWindowAttributes(m_hWnd, RGB(0, 0, 0), transparencySettings.byInactiveAlpha, LWA_ALPHA);
 		}
-		
+
 	}
 
 	// we're being called while OnCreate is running, return here
@@ -741,7 +741,7 @@ LRESULT MainFrame::OnSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHa
 
 // 	CRect rectWindow;
 // 	GetWindowRect(&rectWindow);
-// 
+//
 // 	TRACE(L"OnSize dims: %ix%i\n", rectWindow.Width(), rectWindow.Height());
 
 
@@ -760,7 +760,7 @@ LRESULT MainFrame::OnSizing(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /
 
 	if (!m_activeView)
 		return 0;
-	
+
 	m_activeView->SetResizing(true);
 
 	CPoint pointSize = m_activeView->GetCellSize();
@@ -799,11 +799,11 @@ LRESULT MainFrame::OnWindowPosChanging(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	if (m_bRestoringWindow)
 	{
 		SetWindowPos(
-			NULL, 
-			m_rectRestoredWnd.left, 
-			m_rectRestoredWnd.top, 
-			0, 
-			0, 
+			NULL,
+			m_rectRestoredWnd.left,
+			m_rectRestoredWnd.top,
+			0,
+			0,
 			SWP_NOSIZE|SWP_NOZORDER|SWP_NOSENDCHANGING);
 
 		return 0;
@@ -818,7 +818,7 @@ LRESULT MainFrame::OnWindowPosChanging(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
         }
 
 		m_dockPosition = dockNone;
-		
+
 		if (positionSettings.nSnapDistance >= 0)
 		{
 			CRect	rectMonitor;
@@ -852,19 +852,19 @@ LRESULT MainFrame::OnWindowPosChanging(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 				pWinPos->x = rectDesktop.left;
 				nLR = 0;
 			}
-			
+
 			if (pWinPos->x >= rectDesktop.right - rectWindow.Width() - positionSettings.nSnapDistance)
 			{
 				pWinPos->x = rectDesktop.right - rectWindow.Width();
 				nLR = 1;
 			}
-			
+
 			if (pWinPos->y <= rectDesktop.top + positionSettings.nSnapDistance)
 			{
 				pWinPos->y = rectDesktop.top;
 				nTB = 0;
 			}
-			
+
 			if (pWinPos->y >= rectDesktop.bottom - rectWindow.Height() - positionSettings.nSnapDistance)
 			{
 				pWinPos->y = rectDesktop.bottom - rectWindow.Height();
@@ -884,7 +884,7 @@ LRESULT MainFrame::OnWindowPosChanging(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 			GetClientRect(&rectClient);
 
 			m_activeView->MainframeMoving();
-			// we need to invalidate client rect here for proper background 
+			// we need to invalidate client rect here for proper background
 			// repaint when using relative backgrounds
 			InvalidateRect(&rectClient, FALSE);
 		}
@@ -929,10 +929,10 @@ LRESULT MainFrame::OnMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 		ClientToScreen(&point);
 
 		SetWindowPos(
-			NULL, 
-			point.x - m_mousedragOffset.x, 
-			point.y - m_mousedragOffset.y, 
-			0, 
+			NULL,
+			point.x - m_mousedragOffset.x,
+			point.y - m_mousedragOffset.y,
+			0,
 			0,
 			SWP_NOSIZE|SWP_NOZORDER);
 
@@ -1050,7 +1050,7 @@ LRESULT MainFrame::OnUpdateTitles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 		UpdateTabTitle(consoleView, strTabTitle);
 
 		if ((m_strCmdLineWindowTitle.GetLength() == 0) &&
-			(windowSettings.bUseTabTitles) && 
+			(windowSettings.bUseTabTitles) &&
 			(consoleView == m_activeView))
 		{
 			m_strWindowTitle = consoleView->GetTitle();
@@ -1084,7 +1084,7 @@ LRESULT MainFrame::OnUpdateTitles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 			SetWindowText(m_strWindowTitle);
 			if (g_settingsHandler->GetAppearanceSettings().stylesSettings.bTrayIcon) SetTrayIcon(NIM_MODIFY);
 		}
-		
+
 		if (windowSettings.bShowCommandInTabs) strTabTitle += strCommandText;
 
 		UpdateTabTitle(consoleView, strTabTitle);
@@ -1101,14 +1101,14 @@ LRESULT MainFrame::OnUpdateTitles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 LRESULT MainFrame::OnShowPopupMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
 	CPoint	point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-	
+
 	CMenu		contextMenu;
 	CMenu		tabsMenu;
 	CMenuHandle	popupMenu;
 
 	contextMenu.LoadMenu(IDR_POPUP_MENU_TAB);
 	popupMenu = contextMenu.GetSubMenu(0);
-	
+
 	UpdateTabsMenu(popupMenu, tabsMenu);
 	popupMenu.TrackPopupMenu(0, point.x, point.y, m_hWnd);
 
@@ -1149,7 +1149,7 @@ LRESULT MainFrame::OnTrayNotify(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			//if (m_bPopupMenuDisabled) return 0;
 
 			CPoint	posCursor;
-			
+
 			::GetCursorPos(&posCursor);
 			// show popup menu
 			::SetForegroundWindow(m_hWnd);
@@ -1160,17 +1160,17 @@ LRESULT MainFrame::OnTrayNotify(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 			contextMenu.LoadMenu(IDR_POPUP_MENU_TAB);
 			popupMenu = contextMenu.GetSubMenu(0);
-			
+
 			UpdateTabsMenu(popupMenu, tabsMenu);
 			popupMenu.TrackPopupMenu(0, posCursor.x, posCursor.y, m_hWnd);
 
 			// we need this for the menu to close when clicking outside of it
 			PostMessage(WM_NULL, 0, 0);
-			
+
 			return 0;
 	   }
-			
-		case WM_LBUTTONDOWN : 
+
+		case WM_LBUTTONDOWN :
 		{
 			// TODO: handle
 //			m_bHideWindow = false;
@@ -1178,7 +1178,7 @@ LRESULT MainFrame::OnTrayNotify(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			::SetForegroundWindow(m_hWnd);
 			return 0;
 		}
-			
+
 		case WM_LBUTTONDBLCLK :
 		{
 			// TODO: handle
@@ -1187,7 +1187,7 @@ LRESULT MainFrame::OnTrayNotify(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 //			::SetForegroundWindow(m_hWnd);
 			return 0;
 		}
-			
+
 		default : return 0;
 	}
 }
@@ -1240,7 +1240,7 @@ LRESULT MainFrame::OnTabChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 	}
 
 	if (appearanceSettings.stylesSettings.bTrayIcon) SetTrayIcon(NIM_MODIFY);
-	
+
 	if (appearanceSettings.windowSettings.bUseTabTitles && (m_activeView.get() != NULL))
 	{
 		SetWindowText(m_activeView->GetTitle());
@@ -1331,7 +1331,7 @@ LRESULT MainFrame::OnFileNewTab(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 	{
 		CreateNewConsole(wID-ID_NEW_TAB_1);
 	}
-	
+
 	return 0;
 }
 
@@ -1358,7 +1358,7 @@ LRESULT MainFrame::OnSwitchTab(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 LRESULT MainFrame::OnFileCloseTab(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	CTabViewTabItem* pTabItem = m_TabCtrl.GetItem(m_TabCtrl.GetCurSel());
-	
+
 	CloseTab(pTabItem);
 	return 0;
 }
@@ -1487,7 +1487,7 @@ LRESULT MainFrame::OnEditRenameTab(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 	if (dlg.DoModal() == IDOK)
 	{
-	
+
 		m_activeView->SetTitle(dlg.m_strTabName);
 
 		WindowSettings& windowSettings = g_settingsHandler->GetAppearanceSettings().windowSettings;
@@ -1520,7 +1520,7 @@ LRESULT MainFrame::OnEditSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	if (dlg.DoModal() == IDOK)
 	{
 		ControlsSettings& controlsSettings = g_settingsHandler->GetAppearanceSettings().controlsSettings;
-	
+
 		UpdateTabsMenu(m_CmdBar.GetMenu(), m_tabsMenu);
 
 		CreateAcceleratorTable();
@@ -1543,8 +1543,8 @@ LRESULT MainFrame::OnEditSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		BOOL bShowTabs = FALSE;
 
 		MutexLock	viewMapLock(m_viewsMutex);
-		
-		if ( controlsSettings.bShowTabs && 
+
+		if ( controlsSettings.bShowTabs &&
 			(!controlsSettings.bHideSingleTab || (m_views.size() > 1))
 		   )
 		{
@@ -1674,7 +1674,7 @@ LRESULT MainFrame::OnDumpBuffer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 LRESULT MainFrame::OnToggleAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	if (!m_activeView) return 0;
-	
+
 	if (g_settingsHandler->GetAppearanceSettings().transparencySettings.transType == transAlpha)
 	{
 		g_settingsHandler->GetAppearanceSettings().transparencySettings.transType = transNone;
@@ -1698,7 +1698,7 @@ LRESULT MainFrame::OnToggleAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT MainFrame::OnIncreaseAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	if (!m_activeView) return 0;
-	
+
 	if (g_settingsHandler->GetAppearanceSettings().transparencySettings.byActiveAlpha < 245)
 		g_settingsHandler->GetAppearanceSettings().transparencySettings.byActiveAlpha += 10;
 
@@ -1715,7 +1715,7 @@ LRESULT MainFrame::OnIncreaseAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 LRESULT MainFrame::OnDecreaseAlpha(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	if (!m_activeView) return 0;
-	
+
 	if (g_settingsHandler->GetAppearanceSettings().transparencySettings.byActiveAlpha > 10)
 		g_settingsHandler->GetAppearanceSettings().transparencySettings.byActiveAlpha -= 10;
 
@@ -1835,20 +1835,20 @@ void MainFrame::AdjustAndResizeConsoleView(CRect& rectView)
 	if (!m_activeView) return;
 
 	m_activeView->AdjustRectAndResize(rectView);
-	
+
 	// for other views, first set view size and then resize their Windows consoles
 	for (ConsoleViewMap::iterator it = m_views.begin(); it != m_views.end(); ++it)
 	{
 		if (it->second->m_hWnd == m_activeView->m_hWnd) continue;
 
 		it->second->SetWindowPos(
-						0, 
-						0, 
-						0, 
-						rectView.right - rectView.left, 
-						rectView.bottom - rectView.top, 
+						0,
+						0,
+						0,
+						rectView.right - rectView.left,
+						rectView.bottom - rectView.top,
 						SWP_NOMOVE|SWP_NOZORDER|SWP_NOSENDCHANGING);
-		
+
 		it->second->AdjustRectAndResize(rectView);
 	}
 }
@@ -1901,10 +1901,10 @@ bool MainFrame::CreateNewConsole(DWORD dwTabIndex, const wstring& strStartupDir 
 	}
 
 	HWND hwndConsoleView = consoleView->Create(
-											m_hWnd, 
-											rcDefault, 
-											NULL, 
-											WS_CHILD | WS_VISIBLE,// | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 
+											m_hWnd,
+											rcDefault,
+											NULL,
+											WS_CHILD | WS_VISIBLE,// | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 											0,
 											0U,
 											reinterpret_cast<void*>(&userCredentials));
@@ -1912,7 +1912,7 @@ bool MainFrame::CreateNewConsole(DWORD dwTabIndex, const wstring& strStartupDir 
 	if (hwndConsoleView == NULL)
 	{
 		CString	strMessage(consoleView->GetExceptionMessage());
-				
+
 		if (strMessage.GetLength() == 0)
 		{
 			// copied from ConsoleView::OnCreate
@@ -1926,7 +1926,7 @@ bool MainFrame::CreateNewConsole(DWORD dwTabIndex, const wstring& strStartupDir 
 				strShell	= tabData->strShell;
 			}
 			// end of copy from ConsoleView::OnCreate
-	 
+
 			strMessage.Format(IDS_TAB_CREATE_FAILED, g_settingsHandler->GetTabSettings().tabDataVector[dwTabIndex]->strTitle.c_str(), strShell.c_str());
 		}
 
@@ -1982,7 +1982,7 @@ void MainFrame::CloseTab(HWND hwndConsoleView)
 	m_views.erase(it);
 
 	if ((m_views.size() == 1) &&
-		m_bTabsVisible && 
+		m_bTabsVisible &&
 		(g_settingsHandler->GetAppearanceSettings().controlsSettings.bHideSingleTab))
 	{
 		ShowTabs(FALSE);
@@ -2003,18 +2003,18 @@ void MainFrame::UpdateTabTitle(const std::shared_ptr<ConsoleView>& consoleView, 
 
 	WindowSettings& windowSettings = g_settingsHandler->GetAppearanceSettings().windowSettings;
 
-	if 
+	if
 	(
-		(windowSettings.dwTrimTabTitles > 0) 
-		&& 
-		(windowSettings.dwTrimTabTitles > windowSettings.dwTrimTabTitlesRight) 
-		&& 
+		(windowSettings.dwTrimTabTitles > 0)
+		&&
+		(windowSettings.dwTrimTabTitles > windowSettings.dwTrimTabTitlesRight)
+		&&
 		(strTabTitle.GetLength() > static_cast<int>(windowSettings.dwTrimTabTitles))
 	)
 	{
 		strTabTitle = strTabTitle.Left(windowSettings.dwTrimTabTitles - windowSettings.dwTrimTabTitlesRight) + CString(L"...") + strTabTitle.Right(windowSettings.dwTrimTabTitlesRight);
 	}
-	
+
 	UpdateTabText(*consoleView, strTabTitle);
 }
 
@@ -2050,7 +2050,7 @@ void MainFrame::UpdateTabsMenu(CMenuHandle mainMenu, CMenu& tabsMenu)
 
 		// create menu icons with proper transparency (thanks to chrisz for the patch)
 		CIcon tabSmallIcon;
-		
+
 		if ((*it)->bUseDefaultIcon || ((*it)->strIcon.length() > 0))
 		{
 			if ((*it)->menuBitmap.IsNull())
@@ -2103,7 +2103,7 @@ void MainFrame::UpdateTabsMenu(CMenuHandle mainMenu, CMenu& tabsMenu)
 			if (!(*it)->menuBitmap.IsNull()) (*it)->menuBitmap.DeleteObject();
 		}
 
-		if (!(*it)->menuBitmap.IsNull()) 
+		if (!(*it)->menuBitmap.IsNull())
 		{
 			tabsMenu.SetMenuItemBitmaps(dwId, MF_BYCOMMAND, (*it)->menuBitmap, NULL);
 		}
@@ -2219,11 +2219,11 @@ void MainFrame::DockWindow(DockPosition dockPosition)
 	}
 
 	SetWindowPos(
-		NULL, 
-		nX, 
-		nY, 
-		0, 
-		0, 
+		NULL,
+		nX,
+		nY,
+		0,
+		0,
 		SWP_NOSIZE|SWP_NOZORDER);
 }
 
@@ -2287,37 +2287,37 @@ void MainFrame::SetWindowIcons()
 		if (windowSettings.strIcon.length() > 0)
 		{
 			m_icon.Attach(static_cast<HICON>(::LoadImage(
-													NULL, 
-													Helpers::ExpandEnvironmentStrings(windowSettings.strIcon).c_str(), 
-													IMAGE_ICON, 
-													0, 
-													0, 
+													NULL,
+													Helpers::ExpandEnvironmentStrings(windowSettings.strIcon).c_str(),
+													IMAGE_ICON,
+													0,
+													0,
 													LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_DEFAULTSIZE)));
 
 			m_smallIcon.Attach(static_cast<HICON>(::LoadImage(
-													NULL, 
-													Helpers::ExpandEnvironmentStrings(windowSettings.strIcon).c_str(), 
-													IMAGE_ICON, 
-													16, 
-													16, 
+													NULL,
+													Helpers::ExpandEnvironmentStrings(windowSettings.strIcon).c_str(),
+													IMAGE_ICON,
+													16,
+													16,
 													LR_DEFAULTCOLOR | LR_LOADFROMFILE)));
 		}
 		else
 		{
 			m_icon.Attach(static_cast<HICON>(::LoadImage(
-													::GetModuleHandle(NULL), 
-													MAKEINTRESOURCE(IDR_MAINFRAME), 
-													IMAGE_ICON, 
-													0, 
-													0, 
+													::GetModuleHandle(NULL),
+													MAKEINTRESOURCE(IDR_MAINFRAME),
+													IMAGE_ICON,
+													0,
+													0,
 													LR_DEFAULTCOLOR | LR_DEFAULTSIZE)));
 
 			m_smallIcon.Attach(static_cast<HICON>(::LoadImage(
-													::GetModuleHandle(NULL), 
-													MAKEINTRESOURCE(IDR_MAINFRAME), 
-													IMAGE_ICON, 
-													16, 
-													16, 
+													::GetModuleHandle(NULL),
+													MAKEINTRESOURCE(IDR_MAINFRAME),
+													IMAGE_ICON,
+													16,
+													16,
 													LR_DEFAULTCOLOR)));
 		}
 	}
@@ -2388,7 +2388,7 @@ void MainFrame::ShowStatusbar(BOOL bShow)
 	UISetCheck(ID_VIEW_STATUS_BAR, m_bStatusBarVisible);
 
 	g_settingsHandler->GetAppearanceSettings().controlsSettings.bShowStatusbar = m_bStatusBarVisible? true : false;
-	
+
 	UpdateLayout();
 	AdjustWindowSize(false);
 	DockWindow(m_dockPosition);
@@ -2472,7 +2472,7 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 		if (bMaxOrRestore)
 		{
 			GetClientRect(&clientRect);
-		
+
 			// adjust for the toolbar height
 			CReBarCtrl	rebar(m_hWndToolBar);
 //			clientRect.top	+= rebar.GetBarHeight() - 4;
@@ -2494,22 +2494,22 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 
 		// if we're being maximized, AdjustRectAndResize will use client rect supplied
 		m_activeView->AdjustRectAndResize(clientRect, m_dwResizeWindowEdge, !bMaxOrRestore);
-		
+
 		// for other views, first set view size and then resize their Windows consoles
 		MutexLock	viewMapLock(m_viewsMutex);
-		
+
 		for (ConsoleViewMap::iterator it = m_views.begin(); it != m_views.end(); ++it)
 		{
 			if (it->second->m_hWnd == m_activeView->m_hWnd) continue;
 
 			it->second->SetWindowPos(
-							0, 
-							0, 
-							0, 
-							clientRect.Width(), 
-							clientRect.Height(), 
+							0,
+							0,
+							0,
+							clientRect.Width(),
+							clientRect.Height(),
 							SWP_NOMOVE|SWP_NOZORDER|SWP_NOSENDCHANGING);
-		
+
 			// if we're being maximized, AdjustRectAndResize will use client rect supplied
 			it->second->AdjustRectAndResize(clientRect, m_dwResizeWindowEdge, !bMaxOrRestore);
 		}
@@ -2530,11 +2530,11 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 //	TRACE(L"AdjustWindowSize: %ix%i\n", clientRect.Width(), clientRect.Height());
 
 	SetWindowPos(
-		0, 
-		0, 
-		0, 
-		clientRect.Width(), 
-		clientRect.Height() + 4, 
+		0,
+		0,
+		0,
+		clientRect.Width(),
+		clientRect.Height() + 4,
 		SWP_NOMOVE|SWP_NOZORDER|SWP_NOSENDCHANGING);
 
 	// update window width and height
@@ -2574,20 +2574,20 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 		if (!m_activeView) return;
 
 		m_activeView->AdjustRectAndResize(clientRect);
-		
+
 		// for other views, first set view size and then resize their Windows consoles
 		for (ConsoleViewMap::iterator it = m_views.begin(); it != m_views.end(); ++it)
 		{
 			if (it->second->m_hWnd == m_activeView->m_hWnd) continue;
 
 			it->second->SetWindowPos(
-							0, 
-							0, 
-							0, 
-							clientRect.Width(), 
-							clientRect.Height(), 
+							0,
+							0,
+							0,
+							clientRect.Width(),
+							clientRect.Height(),
 							SWP_NOMOVE|SWP_NOZORDER|SWP_NOSENDCHANGING);
-			
+
 			it->second->AdjustRectAndResize(clientRect);
 		}
 	}
@@ -2601,11 +2601,11 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 	AdjustWindowRect(clientRect);
 
 	SetWindowPos(
-		0, 
-		0, 
-		0, 
-		clientRect.Width(), 
-		clientRect.Height() + 4, 
+		0,
+		0,
+		0,
+		clientRect.Width(),
+		clientRect.Height() + 4,
 		SWP_NOMOVE|SWP_NOZORDER|SWP_NOSENDCHANGING);
 
 	// update window width and height
@@ -2629,7 +2629,7 @@ void MainFrame::SetTransparency()
 
 	switch (m_bSafe ? transNone : transparencySettings.transType)
 	{
-		case transAlpha : 
+		case transAlpha :
 
 			// if Console is pinned to the desktop window, wee need to set it as top-level window temporarily
 			if (m_zOrder == zorderDesktop) SetParent(NULL);
@@ -2642,13 +2642,13 @@ void MainFrame::SetTransparency()
 			}
 
 			SetWindowLong(
-				GWL_EXSTYLE, 
+				GWL_EXSTYLE,
 				GetWindowLong(GWL_EXSTYLE) | WS_EX_LAYERED);
 
 			::SetLayeredWindowAttributes(
 				m_hWnd,
-				0, 
-				transparencySettings.byActiveAlpha, 
+				0,
+				transparencySettings.byActiveAlpha,
 				LWA_ALPHA);
 
 			// back to desktop-pinned mode, if needed
@@ -2659,13 +2659,13 @@ void MainFrame::SetTransparency()
 		case transColorKey :
 		{
 			SetWindowLong(
-				GWL_EXSTYLE, 
+				GWL_EXSTYLE,
 				GetWindowLong(GWL_EXSTYLE) | WS_EX_LAYERED);
 
 			::SetLayeredWindowAttributes(
 				m_hWnd,
-				transparencySettings.crColorKey, 
-				transparencySettings.byActiveAlpha, 
+				transparencySettings.crColorKey,
+				transparencySettings.byActiveAlpha,
 				LWA_COLORKEY);
 
 			break;
@@ -2674,7 +2674,7 @@ void MainFrame::SetTransparency()
 		default :
 		{
 			SetWindowLong(
-					GWL_EXSTYLE, 
+					GWL_EXSTYLE,
 					GetWindowLong(GWL_EXSTYLE) & ~WS_EX_LAYERED);
 		}
 
@@ -2768,7 +2768,7 @@ void MainFrame::CreateStatusBar()
     UIAddStatusBar(m_hWndStatusBar);
 
 	int arrPanes[]	= { ID_DEFAULT_PANE, IDPANE_ROWS_COLUMNS };
- 
+
     m_statusBar.SetPanes(arrPanes, sizeof(arrPanes)/sizeof(int), false);
 	m_statusBar.SetPaneWidth(IDPANE_ROWS_COLUMNS, 50);
 }
@@ -2779,7 +2779,7 @@ void MainFrame::CreateStatusBar()
 /////////////////////////////////////////////////////////////////////////////
 
 BOOL MainFrame::SetTrayIcon(DWORD dwMessage) {
-	
+
 	NOTIFYICONDATA	tnd;
 	wstring			strToolTip(m_strWindowTitle);
 
@@ -2789,12 +2789,12 @@ BOOL MainFrame::SetTrayIcon(DWORD dwMessage) {
 	tnd.uFlags				= NIF_MESSAGE|NIF_ICON|NIF_TIP;
 	tnd.uCallbackMessage	= UM_TRAY_NOTIFY;
 	tnd.hIcon				= m_smallIcon;
-	
+
 	if (strToolTip.length() > 63) {
 		strToolTip.resize(59);
 		strToolTip += _T(" ...");
 	}
-	
+
 	// we're still using v4.0 controls, so the size of the tooltip can be at most 64 chars
 	// TODO: there should be a macro somewhere
 	wcsncpy_s(tnd.szTip, _countof(tnd.szTip), strToolTip.c_str(), (sizeof(tnd.szTip)-1)/sizeof(wchar_t));
