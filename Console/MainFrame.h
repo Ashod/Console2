@@ -194,7 +194,11 @@ class MainFrame
 
 //		std::shared_ptr<ConsoleView> GetActiveView();
 
-		void AdjustWindowRect(CRect& rect);
+        //! Calculate the Window size given a desired Client size.
+        CRect WindowRectForClient(const CRect& rcClient) const;
+        //! Calculate the Client size given a desired Window size.
+        CRect ClientRectForWindow(const CRect& rcWindow) const;
+
 //		void AdjustAndResizeConsoleView(CRect& rectView);
 		void AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore = false);
 

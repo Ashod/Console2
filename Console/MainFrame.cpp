@@ -690,10 +690,10 @@ LRESULT MainFrame::OnGetMinMaxInfo(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		return 1;
 	}
 
-	AdjustWindowRect(maxClientRect);
+    const CRect rcWin = WindowRectForClient(maxClientRect);
 
-	pMinMax->ptMaxSize.x = maxClientRect.Width();
-	pMinMax->ptMaxSize.y = maxClientRect.Height() + 4;
+    pMinMax->ptMaxSize.x = rcWin.Width();
+    pMinMax->ptMaxSize.y = rcWin.Height();
 
 	pMinMax->ptMaxTrackSize.x = pMinMax->ptMaxSize.x;
 	pMinMax->ptMaxTrackSize.y = pMinMax->ptMaxSize.y;
@@ -1779,25 +1779,65 @@ std::shared_ptr<ConsoleView> MainFrame::GetActiveView()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void MainFrame::AdjustWindowRect(CRect& rect)
+CRect MainFrame::WindowRectForClient(const CRect& rcClient) const
 {
-	AdjustWindowRectEx(&rect, GetWindowLong(GWL_STYLE), FALSE, GetWindowLong(GWL_EXSTYLE));
+    CRect rcWin(rcClient);
+    AdjustWindowRectEx(&rcWin, GetWindowLong(GWL_STYLE), FALSE, GetWindowLong(GWL_EXSTYLE));
 
-	// adjust for the toolbar height
-	CReBarCtrl	rebar(m_hWndToolBar);
-	rect.bottom	+= rebar.GetBarHeight() - 4;
+    // Adjust for the Toolbar.
+    rcWin.bottom += (UINT)::SendMessage(m_hWndToolBar, RB_GETBARHEIGHT, 0, 0L);
 
-	if (m_bStatusBarVisible)
-	{
-		CRect rectStatusBar(0, 0, 0, 0);
+    // Adjust for the Tabs.
+    rcWin.bottom += GetTabAreaHeight();
 
-		::GetWindowRect(m_hWndStatusBar, &rectStatusBar);
-		rect.bottom	+= rectStatusBar.Height();
-	}
+    // Adjust for the StatusBar.
+    if (m_bStatusBarVisible)
+    {
+        CRect rectStatusBar;
+        ::GetWindowRect(m_hWndStatusBar, &rectStatusBar);
+        rcWin.bottom += rectStatusBar.Height();
+    }
 
-	rect.bottom	+= GetTabAreaHeight();
+    TRACE(L"Client Rect: %i x %i -> Window Rect: %i x %i\n",
+          rcClient.Width(), rcClient.Height(),
+          rcWin.Width(), rcWin.Height());
 
-	TRACE(L"%i x %i\n", rect.Width(), rect.Height());
+    return rcWin;
+}
+
+CRect MainFrame::ClientRectForWindow(const CRect& rcWindow) const
+{
+    CRect rcWin;
+    AdjustWindowRectEx(&rcWin, GetWindowLong(GWL_STYLE), FALSE, GetWindowLong(GWL_EXSTYLE));
+
+    CRect rcClient(rcWindow);
+    rcClient.left -= rcWin.left;
+    rcClient.top -= rcWin.top;
+    rcClient.right -= rcWin.right;
+    rcClient.bottom -= rcWin.bottom;
+
+    // Adjust for the Toolbar.
+    CReBarCtrl rebar(m_hWndToolBar);
+    rcClient.bottom -= rebar.GetBarHeight();
+
+    // Adjust for the Tabs.
+    rcClient.bottom -= GetTabAreaHeight();
+    //TODO: Correctly calculate the area based on the position of the tabs.
+    // ControlsSettings& controlsSettings= g_settingsHandler->GetAppearanceSettings().controlsSettings;
+
+    // Adjust for the StatusBar.
+    if (m_bStatusBarVisible)
+    {
+        CRect rectStatusBar;
+        ::GetWindowRect(m_hWndStatusBar, &rectStatusBar);
+        rcClient.bottom += rectStatusBar.Height();
+    }
+
+    TRACE(L"Window Rect: %i x %i -> Client Rect: %i x %i\n",
+          rcWin.Width(), rcWin.Height(),
+          rcClient.Width(), rcClient.Height());
+
+    return rcClient;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2475,6 +2515,12 @@ void MainFrame::ResizeWindow()
 
 void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= false*/)
 {
+    if (!m_activeView)
+    {
+        return;
+    }
+
+    bMaxOrRestore |= m_bFullScreen;
     TRACE(L"ResizeConsole: %d, MaxOrRestore: %d\n", bResizeConsole, bMaxOrRestore);
 
 	CRect clientRect(0, 0, 0, 0);
@@ -2483,54 +2529,40 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 	{
 		if (bMaxOrRestore)
 		{
-			GetClientRect(&clientRect);
-            //TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
-
-			// adjust for the toolbar height
-			CReBarCtrl	rebar(m_hWndToolBar);
-//			clientRect.top	+= rebar.GetBarHeight() - 4;
-			clientRect.bottom -= rebar.GetBarHeight();
-
-			if (m_bStatusBarVisible)
-			{
-				CRect rectStatusBar(0, 0, 0, 0);
-				::GetWindowRect(m_hWndStatusBar, &rectStatusBar);
-				clientRect.bottom -= rectStatusBar.Height();
-			}
-
-			clientRect.top += GetTabAreaHeight(); //+0
+            CRect rcWin;
+            GetWindowRect(rcWin);
+            clientRect = ClientRectForWindow(rcWin);
+            const CRect rcWin2 = WindowRectForClient(clientRect);
+            assert(rcWin == rcWin);
 		}
 
-		// adjust the active view
-		if (!m_activeView) return;
-
-		// if we're being maximized, AdjustRectAndResize will use client rect supplied
+    	// if we're being maximized, AdjustRectAndResize will use client rect supplied
 		m_activeView->AdjustRectAndResize(clientRect, m_dwResizeWindowEdge, !bMaxOrRestore);
         //TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
 
 		// for other views, first set view size and then resize their Windows consoles
-		MutexLock	viewMapLock(m_viewsMutex);
+		MutexLock viewMapLock(m_viewsMutex);
 
 		for (ConsoleViewMap::iterator it = m_views.begin(); it != m_views.end(); ++it)
 		{
-			if (it->second->m_hWnd == m_activeView->m_hWnd) continue;
+            if (it->second->m_hWnd != m_activeView->m_hWnd)
+            {
+                it->second->SetWindowPos(
+                    0,
+                    0,
+                    0,
+                    clientRect.Width(),
+                    clientRect.Height(),
+                    SWP_NOMOVE | SWP_NOZORDER | SWP_NOSENDCHANGING);
 
-            it->second->SetWindowPos(
-							0,
-							0,
-							0,
-							clientRect.Width(),
-							clientRect.Height(),
-							SWP_NOMOVE|SWP_NOZORDER|SWP_NOSENDCHANGING);
-
-			// if we're being maximized, AdjustRectAndResize will use client rect supplied
-			it->second->AdjustRectAndResize(clientRect, m_dwResizeWindowEdge, !bMaxOrRestore);
-            //TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
+                // if we're being maximized, AdjustRectAndResize will use client rect supplied
+                it->second->AdjustRectAndResize(clientRect, m_dwResizeWindowEdge, !bMaxOrRestore);
+                //TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
+            }
         }
 	}
 	else
 	{
-		if (!m_activeView) return;
 		CRect maxClientRect;
 		m_activeView->GetMaxRect(maxClientRect);
 		m_activeView->GetRect(clientRect);
@@ -2539,20 +2571,17 @@ void MainFrame::AdjustWindowSize(bool bResizeConsole, bool bMaxOrRestore /*= fal
 		if (clientRect.Height() > maxClientRect.Height()) clientRect.bottom = maxClientRect.bottom;
 	}
 
-	AdjustWindowRect(clientRect);
-    TRACE(L"ClientRect: %i x %i\n", clientRect.Width(), clientRect.Height());
-
+    const CRect rcWin = WindowRectForClient(clientRect);
 	SetWindowPos(
 		0,
 		0,
 		0,
-		clientRect.Width(),
-		clientRect.Height() + 4,
+        rcWin.Width(),
+        rcWin.Height(),
 		SWP_NOMOVE|SWP_NOZORDER|SWP_NOSENDCHANGING);
 
 	// update window width and height
 	CRect rectWindow;
-
 	GetWindowRect(&rectWindow);
 	TRACE(L"WindowRect: %i x %i\n", rectWindow.Width(), rectWindow.Height());
 	m_dwWindowWidth	= rectWindow.Width();

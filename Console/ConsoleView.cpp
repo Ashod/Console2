@@ -1090,7 +1090,7 @@ void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdg
           m_hWnd, dwRows, dwColumns, clientRect.Width(), clientRect.Height());
 	//TRACE(L"================================================================\n");
 
-    if (!m_bFullScreen)
+    if (bGetClientRect)
     {
         clientRect.right = clientRect.left + dwColumns*m_nCharWidth + 2 * stylesSettings.dwInsideBorder;
         clientRect.bottom = clientRect.top + dwRows*m_nCharHeight + 2 * stylesSettings.dwInsideBorder;
