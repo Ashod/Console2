@@ -100,7 +100,7 @@ class ConsoleView
 
 		void GetRect(CRect& rcWindow);
 		bool GetMaxRect(CRect& rcMaxWindow);
-		void AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdge, bool bGetClientRect);
+		void AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdge, const bool bGetClientRect);
 		CPoint GetCellSize() { return CPoint(m_nCharWidth, m_nCharHeight); };
         void SetFullScreen(bool fullScreen) { m_bFullScreen = fullScreen; }
 

@@ -603,6 +603,7 @@ LRESULT MainFrame::OnSysKeydown(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
         (wParam == VK_RETURN && (lParam & (0x1 << 29))))
     {
         m_bFullScreen = !m_bFullScreen;
+        TRACE(L"%s\n", m_bFullScreen ? L"Going Fullscreen." : L"Back to window.");
         if (m_activeView)
         {
             m_activeView->SetFullScreen(m_bFullScreen);
@@ -2444,17 +2445,16 @@ void MainFrame::ResizeWindow()
 {
 	CRect rectWindow;
 	GetWindowRect(&rectWindow);
-	DWORD dwWindowWidth	= rectWindow.Width();
-	DWORD dwWindowHeight = rectWindow.Height();
-
-    TRACE(L"%i x %i -> %i x %i\n",
-          m_dwWindowWidth, m_dwWindowHeight,
-          dwWindowWidth, dwWindowHeight);
+	const DWORD dwWindowWidth = rectWindow.Width();
+	const DWORD dwWindowHeight = rectWindow.Height();
 
 	if ((dwWindowWidth != m_dwWindowWidth) ||
 		(dwWindowHeight != m_dwWindowHeight))
 	{
-		AdjustWindowSize(true, false);
+        TRACE(L"%i x %i -> %i x %i\n",
+              m_dwWindowWidth, m_dwWindowHeight,
+              dwWindowWidth, dwWindowHeight);
+        AdjustWindowSize(true, false);
 	}
 
 	SendMessage(WM_NULL, 0, 0);

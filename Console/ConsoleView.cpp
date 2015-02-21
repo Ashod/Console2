@@ -317,7 +317,7 @@ LRESULT ConsoleView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 LRESULT ConsoleView::OnWindowPosChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
 	WINDOWPOS* pWinPos = reinterpret_cast<WINDOWPOS*>(lParam);
-    TRACE(L"%d x %d\n", pWinPos->cx, pWinPos->cy);
+    TRACE(L"0x%08X: %d x %d\n", m_hWnd, pWinPos->cx, pWinPos->cy);
 
 	// showing the view, repaint
     if (pWinPos->flags & SWP_SHOWWINDOW)
@@ -814,6 +814,8 @@ LRESULT ConsoleView::OnUpdateConsoleView(UINT /*uMsg*/, WPARAM wParam, LPARAM /*
 	const bool bResize = ((wParam & UPDATE_CONSOLE_RESIZE) > 0);
 	const bool textChanged = ((wParam & UPDATE_CONSOLE_TEXT_CHANGED) > 0);
 
+    TRACE(L"Console changed:%s%s.\n", (bResize ? L" Resized" : L""), (textChanged ? L" Text Changed" : L""));
+
 	// console size changed, resize offscreen buffers
 	if (bResize)
 	{
@@ -1065,29 +1067,35 @@ bool ConsoleView::GetMaxRect(CRect& rcMaxWindow)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdge, bool bGetClientRect)
+void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdge, const bool bGetClientRect)
 {
 	StylesSettings& stylesSettings = g_settingsHandler->GetAppearanceSettings().stylesSettings;
 
-	if (bGetClientRect) GetWindowRect(&clientRect);
-
-	//TRACE(L"================================================================\n");
-	TRACE(L"rect: %i x %i - %i x %i\n", clientRect.left, clientRect.top, clientRect.right, clientRect.bottom);
+    if (bGetClientRect)
+    {
+        GetWindowRect(&clientRect);
+        TRACE(L"0x%08X: Client Rect: %i x %i - %i x %i\n",
+              m_hWnd, clientRect.left, clientRect.top,
+              clientRect.right, clientRect.bottom);
+    }
 
 	// exclude scrollbars from row/col calculation
 	if (m_bShowVScroll) clientRect.right -= m_nVScrollWidth;
 	if (m_bShowHScroll) clientRect.bottom -= m_nHScrollWidth;
 
 	// TODO: handle variable fonts
-	DWORD dwColumns	= (clientRect.Width() - 2*stylesSettings.dwInsideBorder) / m_nCharWidth;
-	DWORD dwRows	= (clientRect.Height() - 2*stylesSettings.dwInsideBorder) / m_nCharHeight;
-	TRACE(L"0x%08X, Adjusted: %i x %i\n", m_hWnd, dwRows, dwColumns);
+	const DWORD dwColumns = (clientRect.Width() - 2*stylesSettings.dwInsideBorder) / m_nCharWidth;
+	const DWORD dwRows = (clientRect.Height() - 2*stylesSettings.dwInsideBorder) / m_nCharHeight;
+	TRACE(L"0x%08X: Characters: %i x %i (for Client Rect: %i x %i)\n",
+          m_hWnd, dwRows, dwColumns, clientRect.Width(), clientRect.Height());
 	//TRACE(L"================================================================\n");
 
     if (!m_bFullScreen)
     {
         clientRect.right = clientRect.left + dwColumns*m_nCharWidth + 2 * stylesSettings.dwInsideBorder;
         clientRect.bottom = clientRect.top + dwRows*m_nCharHeight + 2 * stylesSettings.dwInsideBorder;
+        TRACE(L"0x%08X: Client Rect From Characters: %i x %i\n",
+              m_hWnd, clientRect.Width(), clientRect.Height());
     }
 
 	// adjust for scrollbars
