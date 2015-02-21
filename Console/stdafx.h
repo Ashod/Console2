@@ -208,9 +208,9 @@ void __cdecl operator delete(void* p, LPCSTR lpszFileName, int nLine);
 
 #ifdef _DEBUG
 
-void Trace(const wchar_t* pszFunction, const wchar_t* pszFormat, ...);
+void Trace(const wchar_t* pszFunction, const int line, const wchar_t* pszFormat, ...);
 
-#define TRACE(...)		::Trace(__FUNCTIONW__, __VA_ARGS__)
+#define TRACE(...)		::Trace(__FUNCTIONW__, __LINE__, __VA_ARGS__)
 
 #else
 

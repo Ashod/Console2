@@ -48,17 +48,17 @@ void __cdecl operator delete(void* pData, LPCSTR /* lpszFileName */, int /* nLin
 #ifdef _DEBUG
 #include <stdio.h>
 
-void Trace(const wchar_t* pszFunction, const wchar_t* pszFormat, ...)
+void Trace(const wchar_t* pszFunction, const int line, const wchar_t* pszFormat, ...)
 {
     static unsigned long long index = 0;
     ::InterlockedIncrement(&index);
 
     wchar_t szOutput[1024];
     swprintf(szOutput, _countof(szOutput), L"%d: ", index);
-
     ::OutputDebugString(szOutput);
     ::OutputDebugString(pszFunction);
-    ::OutputDebugString(L": ");
+    swprintf(szOutput, _countof(szOutput), L"#%d: ", line);
+    ::OutputDebugString(szOutput);
 
 	va_list	vaList;
 
