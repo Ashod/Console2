@@ -1961,7 +1961,7 @@ bool SettingsHandler::WriteDefaultSettings(const std::string& xml) const
 
 std::string SettingsHandler::GetDefaultSettingsXml() const
 {
-    const HRSRC hres = FindResource(NULL, MAKEINTRESOURCE(IDR_DEF_SETTINGS), RT_HTML);
+    const HRSRC hres = FindResource(NULL, MAKEINTRESOURCE(IDR_DEF_SETTINGS), L"XML");
     if (hres == 0)
     {
         _tcprintf(_T("Failed to locate default settings resource."));
