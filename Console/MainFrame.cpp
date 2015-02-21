@@ -1017,7 +1017,7 @@ LRESULT MainFrame::OnConsoleResized(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	SharedMemory<ConsoleParams>& consoleParams = m_activeView->GetConsoleHandler().GetConsoleParams();
 
     TRACE(L"%d x %d -> %d x %d\n", m_dwRows, m_dwColumns, consoleParams->dwRows, consoleParams->dwColumns);
-	m_dwRows	= consoleParams->dwRows;
+	m_dwRows = consoleParams->dwRows;
 	m_dwColumns	= consoleParams->dwColumns;
 
 	AdjustWindowSize(false);

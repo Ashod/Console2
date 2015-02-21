@@ -24,7 +24,7 @@ typedef map<HWND, std::shared_ptr<ConsoleView> >	ConsoleViewMap;
 
 //////////////////////////////////////////////////////////////////////////////
 
-class MainFrame 
+class MainFrame
 	: public CTabbedFrameImpl<MainFrame>
 	, public CUpdateUI<MainFrame>
 	, public CMessageFilter
@@ -82,15 +82,15 @@ class MainFrame
 			MESSAGE_HANDLER(UM_START_MOUSE_DRAG, OnStartMouseDrag)
 			MESSAGE_HANDLER(UM_TRAY_NOTIFY, OnTrayNotify)
 			MESSAGE_HANDLER(WM_COPYDATA, OnCopyData)
-			
+
 			NOTIFY_CODE_HANDLER(CTCN_SELCHANGE, OnTabChanged)
 			NOTIFY_CODE_HANDLER(CTCN_CLOSE, OnTabClose)
 			NOTIFY_CODE_HANDLER(CTCN_MCLICK, OnTabMiddleClick);
 			NOTIFY_CODE_HANDLER(RBN_HEIGHTCHANGE, OnRebarHeightChanged)
 			NOTIFY_HANDLER(ATL_IDW_TOOLBAR, TBN_DROPDOWN, OnToolbarDropDown)
-			
+
 			CHAIN_MSG_MAP(CUpdateUI<MainFrame>)
-			
+
 			COMMAND_RANGE_HANDLER(ID_NEW_TAB_1, ID_NEW_TAB_1 + 99, OnFileNewTab)
 			COMMAND_ID_HANDLER(ID_FILE_NEW_TAB, OnFileNewTab)
 			COMMAND_RANGE_HANDLER(ID_SWITCH_TAB_1, ID_SWITCH_TAB_1 + 9, OnSwitchTab)
@@ -116,7 +116,7 @@ class MainFrame
 			COMMAND_ID_HANDLER(ID_TOGGLE_ALPHA, OnToggleAlpha)
 			COMMAND_ID_HANDLER(ID_INCREASE_ALPHA, OnIncreaseAlpha)
 			COMMAND_ID_HANDLER(ID_DECREASE_ALPHA, OnDecreaseAlpha)
-			
+
 			CHAIN_MSG_MAP(CTabbedFrameImpl<MainFrame>)
 			REFLECT_NOTIFICATIONS()
 		END_MSG_MAP()

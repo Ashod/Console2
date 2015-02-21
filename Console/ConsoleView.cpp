@@ -811,8 +811,8 @@ LRESULT ConsoleView::OnUpdateConsoleView(UINT /*uMsg*/, WPARAM wParam, LPARAM /*
 {
 	if (m_bInitializing) return false;
 
-	bool bResize	= ((wParam & UPDATE_CONSOLE_RESIZE) > 0);
-	bool textChanged= ((wParam & UPDATE_CONSOLE_TEXT_CHANGED) > 0);
+	const bool bResize = ((wParam & UPDATE_CONSOLE_RESIZE) > 0);
+	const bool textChanged = ((wParam & UPDATE_CONSOLE_TEXT_CHANGED) > 0);
 
 	// console size changed, resize offscreen buffers
 	if (bResize)
@@ -1075,8 +1075,8 @@ void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdg
 	TRACE(L"rect: %i x %i - %i x %i\n", clientRect.left, clientRect.top, clientRect.right, clientRect.bottom);
 
 	// exclude scrollbars from row/col calculation
-	if (m_bShowVScroll) clientRect.right	-= m_nVScrollWidth;
-	if (m_bShowHScroll) clientRect.bottom	-= m_nHScrollWidth;
+	if (m_bShowVScroll) clientRect.right -= m_nVScrollWidth;
+	if (m_bShowHScroll) clientRect.bottom -= m_nHScrollWidth;
 
 	// TODO: handle variable fonts
 	DWORD dwColumns	= (clientRect.Width() - 2*stylesSettings.dwInsideBorder) / m_nCharWidth;
@@ -1091,15 +1091,15 @@ void ConsoleView::AdjustRectAndResize(CRect& clientRect, DWORD dwResizeWindowEdg
     }
 
 	// adjust for scrollbars
-	if (m_bShowVScroll) clientRect.right	+= m_nVScrollWidth;
-	if (m_bShowHScroll) clientRect.bottom	+= m_nHScrollWidth;
+	if (m_bShowVScroll) clientRect.right += m_nVScrollWidth;
+	if (m_bShowHScroll) clientRect.bottom += m_nHScrollWidth;
 
-	SharedMemory<ConsoleSize>&	newConsoleSize = m_consoleHandler.GetNewConsoleSize();
-	SharedMemoryLock			memLock(newConsoleSize);
+	SharedMemory<ConsoleSize>& newConsoleSize = m_consoleHandler.GetNewConsoleSize();
+	SharedMemoryLock memLock(newConsoleSize);
 
-	newConsoleSize->dwColumns			= dwColumns;
-	newConsoleSize->dwRows				= dwRows;
-	newConsoleSize->dwResizeWindowEdge	= dwResizeWindowEdge;
+	newConsoleSize->dwColumns = dwColumns;
+	newConsoleSize->dwRows = dwRows;
+	newConsoleSize->dwResizeWindowEdge = dwResizeWindowEdge;
 
 	m_consoleHandler.GetNewConsoleSize().SetReqEvent();
 }
