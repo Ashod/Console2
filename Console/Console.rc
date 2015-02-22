@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -38,6 +36,12 @@ BEGIN
     "\0"
 END
 
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
 #endif    // APSTUDIO_INVOKED
 
 
@@ -46,16 +50,16 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 187, 102
+IDD_ABOUTBOX DIALOGEX 0, 0, 187, 134
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,130,81,50,14
-    CTEXT           "Console 2.0",IDC_STATIC_VERSION,25,56,78,8,0,WS_EX_ACCEPTFILES
-    ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
-    GROUPBOX        "",IDC_STATIC,7,7,115,88
-    CTEXT           "Copyright (C) 2001-2010\nMarko Bozikovic",IDC_STATIC,25,71,78,17
+    DEFPUSHBUTTON   "OK",IDOK,130,113,50,14
+    CTEXT           "Console 2.01",IDC_STATIC_VERSION,26,57,78,8,0,WS_EX_ACCEPTFILES
+    ICON            IDR_MAINFRAME,IDC_STATIC,55,25,21,20
+    GROUPBOX        "",IDC_STATIC,7,7,115,120
+    CTEXT           "Copyright (C) 2001-2010\nMarko Bozikovic\n\nCopyright (C) 2014-2015\nAshod Nakashian",IDC_STATIC,26,75,78,44
 END
 
 IDD_RENAME_TAB DIALOGEX 0, 0, 186, 55
@@ -466,14 +470,16 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 180
+        VERTGUIDE, 65
         TOPMARGIN, 7
-        BOTTOMMARGIN, 95
+        BOTTOMMARGIN, 127
+        HORZGUIDE, 25
     END
 
     IDD_RENAME_TAB, DIALOG
@@ -593,7 +599,7 @@ END
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  16, 16
+IDR_MAINFRAME TOOLBAR 16, 16
 BEGIN
     BUTTON      ID_FILE_NEW_TAB
     BUTTON      ID_PREV_TAB
@@ -619,7 +625,7 @@ IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "File"
     BEGIN
@@ -657,7 +663,7 @@ BEGIN
     END
 END
 
-IDR_POPUP_MENU_TAB MENU 
+IDR_POPUP_MENU_TAB MENU
 BEGIN
     POPUP "_"
     BEGIN
@@ -696,7 +702,7 @@ BEGIN
     END
 END
 
-IDR_SYSTEM_MENU MENU 
+IDR_SYSTEM_MENU MENU
 BEGIN
     POPUP "_"
     BEGIN
@@ -735,8 +741,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,0,148
- PRODUCTVERSION 2,0,0,148
+ FILEVERSION 2,0,1,150
+ PRODUCTVERSION 2,0,1,150
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -754,13 +760,13 @@ BEGIN
             VALUE "Comments", "Tabbed cool console window (THIS IS NOT A SHELL :-)"
             VALUE "CompanyName", "Ingenuity Unlimited Ltd."
             VALUE "FileDescription", "Main Console module"
-            VALUE "FileVersion", "2.00, Build 148 2011.10.03"
+            VALUE "FileVersion", "2.01, Build 150 2015-02-21"
             VALUE "InternalName", "Console"
-            VALUE "LegalCopyright", "Copyright © 2001-2011 Marko Bozikovic"
-            VALUE "LegalTrademarks", "Copyright © 2001-2011 Marko Bozikovic"
+            VALUE "LegalCopyright", "Copyright © 2001-2011 Marko Bozikovic, Copyright © 2014-2015 Ashod Nakashian"
+            VALUE "LegalTrademarks", "Copyright © 2001-2011 Marko Bozikovic, Copyright © 2014-2015 Ashod Nakashian"
             VALUE "OriginalFilename", "Console.exe"
             VALUE "ProductName", "Console"
-            VALUE "ProductVersion", "2, 0, 0, 148"
+            VALUE "ProductVersion", "2.0.1.150"
         END
     END
     BLOCK "VarFileInfo"
@@ -875,7 +881,7 @@ IDR_DEF_SETTINGS        XML                     "res\\settings.xml"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "Console"
     IDS_TAB_CREATE_FAILED   "Failed to open %s tab!\nThe process %s could still be running (use the Task Manager to find it and end it)"
@@ -895,7 +901,7 @@ BEGIN
     IDS_COMMAND_NEWTAB4     "New Tab 4"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -908,20 +914,20 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
     ID_HELP                 "Opens the help file\nHelp"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -931,7 +937,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -946,13 +952,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_SCSIZE          "Change the window size"
     ATL_IDS_SCMOVE          "Change the window position"
@@ -963,46 +969,46 @@ BEGIN
     ATL_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_SCRESTORE       "Restore the window to normal size"
     ATL_IDS_SCTASKLIST      "Activate Task List"
     ATL_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW_TAB         "Opens a new tab\nNew tab"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_TAB             "Switch to next tab\nNext tab"
     ID_PREV_TAB             "Switch to previous tab\nPrevious tab"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDPANE_ROWS_COLUMNS     "%ix%i"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ERR_CANT_START_SHELL "Unable to start a %1%!"
     IDS_ERR_CANT_START_SHELL_AS_USER "Unable to start a %1% as user %2%!"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COMMAND_NEWTAB5     "New Tab 5"
     IDS_COMMAND_NEWTAB6     "New Tab 6"
@@ -1022,7 +1028,7 @@ BEGIN
     IDS_COMMAND_TAB10       "Switch to tab 10"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COMMAND_NEXT_TAB    "Next tab"
     IDS_COMMAND_PREVIOUS_TAB "Previous tab"
@@ -1042,7 +1048,7 @@ BEGIN
     IDS_COMMAND_DUMP_BUFFER "Dump screen buffer"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COMMAND_MOUSE_COPY  "Copy/clear selection"
     IDS_COMMAND_MOUSE_SELECT "Select text"
@@ -1062,7 +1068,7 @@ BEGIN
     IDS_COMMAND_STOP_SCROLLING "Stop scrolling"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COMBO_SMOOTHING     "Default"
     IDS_COMBO_SMOOTHING_NONE "None"
@@ -1070,7 +1076,7 @@ BEGIN
     IDS_COMBO_DOCKING       "None"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COMBO_DOCKING_TOPLEFT "Top Left"
     IDS_COMBO_DOCKING_TOPRIGHT "Top Right"
@@ -1090,7 +1096,7 @@ BEGIN
     IDS_COMBO_CURSOR_BLOCK  "Block"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_COMBO_CURSOR_NOBLINKBLOCK "Nonblinking block"
     IDS_COMBO_CURSOR_PULSE  "Pulse"
@@ -1104,7 +1110,7 @@ BEGIN
     IDS_COMBO_CURSOR_FADEBLOCK "Fading block"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     MSG_SETTINGS_INVALID_BUFFER_ROWS 
                             "Invalid number of console buffer rows! Must be between 0 and 9999."
@@ -1116,12 +1122,12 @@ BEGIN
                             "Invalid number of console columns! Must be between 0 and 200."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_SETTINGS_TAB_COLORS "Colors"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
