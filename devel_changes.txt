@@ -1,5 +1,18 @@
-v2.00
+v2.01
 =====
+
+Build 150
+=========
+
+First release by Ashod Nakashian.
+
+- Fullscreen support via ALT-ENTER.
+- Improved multi-monitor support.
+- Fixed hidden current line with multi-tabs and scrolling text.
+- Built-in default settings, improved portability.
+- Stability improvements when a shell crashes.
+- Updated WTL and FreeImage libraries.
+
 
 Build 148
 =========
